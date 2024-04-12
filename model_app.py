@@ -127,12 +127,12 @@ def main():
       st.session_state.info_model=[]
       st.session_state.mat_transi=[]
       st.session_state.page=4
-    st.sidebar.markdown("---")
-    st.sidebar.markdown("Formal Verification of Attack Graphs")
-    if st.sidebar.button('3 - Expert User'):
-      st.session_state.page=5
-      st.session_state.cmpt_model=-1
-      st.session_state.info_model_test=[]
+    # st.sidebar.markdown("---")
+    # st.sidebar.markdown("Formal Verification of Attack Graphs")
+    # if st.sidebar.button('3 - Expert User'):
+    #   st.session_state.page=5
+    #   st.session_state.cmpt_model=-1
+    #   st.session_state.info_model_test=[]
 
     display_page(st.session_state.page)
 
