@@ -1,9 +1,8 @@
-from model_checker_interface.explicit.NatATL.modelCheckingCTL import model_checking, process_modelCheckingCTL
-from models.CGS.CGS import *
-from logics.NatATL.matrixParser import matrixParser
+from model_checker_interface.explicit.CTL import model_checking
+from models.CGS import *
 
 #path destination for new updated input file
-output_file = 'C:\\Users\\lmfao\\Desktop\\Tesi\\TESTING\\output.txt'
+pruned_model_file = './tmp.txt'
 
 def modify_matrix(graph, label_matrix, states, action, agent_index, agents):
     #print(f"states:{states}")
@@ -34,7 +33,7 @@ def process_transition_matrix_data(cgs, model, agents,  *strategies):
     label_matrix = cgs.create_label_matrix(graph)
     print(f"initial transition matrix: {graph}")
     #print(f"associated labelling matrix:{label_matrix}")
-    actions_per_agent = cgs.get_actions(graph, agents)
+    actions_per_agent = cgs.get_actions(agents)
     agent_actions = {}
     for i, agent_key in enumerate(actions_per_agent.keys()):
         agent_actions[f"actions_{agent_key}"] = actions_per_agent[agent_key]
@@ -76,13 +75,13 @@ def process_transition_matrix_data(cgs, model, agents,  *strategies):
 
     return graph
 
-def pruning(model, agents, formula, current_agents):
-    cgs = CGS()
-    cgs.read_file(model)
-    modified_graph = process_transition_matrix_data(cgs, model, agents,  *current_agents)
-    matrixParser(modified_graph, cgs.get_number_of_agents())
-    cgs.write_updated_file(model, modified_graph, output_file)
-    result = process_modelCheckingCTL(output_file, formula)
+def pruning(cgs, model, agents, formula, current_agents):
+    cgs1 = CGS()
+    cgs1.read_file(model)
+    cgs1.graph = process_transition_matrix_data(cgs, model, agents,  *current_agents)
+    cgs1.matrixParser(cgs.get_number_of_agents())
+    cgs1.write_updated_file(model, cgs1.graph, pruned_model_file)
+    result = model_checking(formula, pruned_model_file)
 
     if (result['initial_state'] == 'Initial state s0: True'):
         #print(result)

@@ -6,9 +6,9 @@ _tabversion = '3.10'
 
 _lr_method = 'LALR'
 
-_lr_signature = 'AND COALITION EVENTUALLY GLOBALLY IMPLIES LPAREN NEXT NOT OR PROP RPAREN UNTILexpression : expression AND expression\n                  | expression OR expression\n                  | expression IMPLIES expressionexpression : COALITION expression UNTIL expressionexpression : COALITION GLOBALLY expression\n                  | COALITION NEXT expression\n                  | COALITION EVENTUALLY expressionexpression : NOT expressionexpression : LPAREN expression RPARENexpression : PROP'
+_lr_signature = 'AND EVENTUALLY EXIST FORALL GLOBALLY IMPLIES LPAREN NEXT NOT OR PROP RPAREN UNTILexpression : expression AND expression\n                  | expression OR expression\n                  | expression IMPLIES expressionexpression : FORALL expression UNTIL expression\n                  | EXIST expression UNTIL expressionexpression : FORALL GLOBALLY expression\n                  | FORALL NEXT expression\n                  | FORALL EVENTUALLY expression\n                  | EXIST GLOBALLY expression\n                  | EXIST NEXT expression\n                  | EXIST EVENTUALLY expressionexpression : NOT expressionexpression : LPAREN expression RPARENexpression : PROP'
     
-_lr_action_items = {'COALITION':([0,2,3,4,6,7,8,10,11,12,18,],[2,2,2,2,2,2,2,2,2,2,2,]),'NOT':([0,2,3,4,6,7,8,10,11,12,18,],[3,3,3,3,3,3,3,3,3,3,3,]),'LPAREN':([0,2,3,4,6,7,8,10,11,12,18,],[4,4,4,4,4,4,4,4,4,4,4,]),'PROP':([0,2,3,4,6,7,8,10,11,12,18,],[5,5,5,5,5,5,5,5,5,5,5,]),'$end':([1,5,13,15,16,17,19,20,21,22,23,],[0,-10,-8,-1,-2,-3,-5,-6,-7,-9,-4,]),'AND':([1,5,9,13,14,15,16,17,19,20,21,22,23,],[6,-10,6,6,6,6,6,6,6,6,6,-9,6,]),'OR':([1,5,9,13,14,15,16,17,19,20,21,22,23,],[7,-10,7,7,7,7,7,7,7,7,7,-9,7,]),'IMPLIES':([1,5,9,13,14,15,16,17,19,20,21,22,23,],[8,-10,8,8,8,8,8,8,8,8,8,-9,8,]),'GLOBALLY':([2,],[10,]),'NEXT':([2,],[11,]),'EVENTUALLY':([2,],[12,]),'UNTIL':([5,9,13,15,16,17,19,20,21,22,23,],[-10,18,-8,-1,-2,-3,-5,-6,-7,-9,-4,]),'RPAREN':([5,13,14,15,16,17,19,20,21,22,23,],[-10,-8,22,-1,-2,-3,-5,-6,-7,-9,-4,]),}
+_lr_action_items = {'FORALL':([0,2,3,4,5,7,8,9,11,12,13,15,16,17,23,27,],[2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,]),'EXIST':([0,2,3,4,5,7,8,9,11,12,13,15,16,17,23,27,],[3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,]),'NOT':([0,2,3,4,5,7,8,9,11,12,13,15,16,17,23,27,],[4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,]),'LPAREN':([0,2,3,4,5,7,8,9,11,12,13,15,16,17,23,27,],[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,]),'PROP':([0,2,3,4,5,7,8,9,11,12,13,15,16,17,23,27,],[6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,]),'$end':([1,6,18,20,21,22,24,25,26,28,29,30,31,32,33,],[0,-14,-12,-1,-2,-3,-6,-7,-8,-9,-10,-11,-13,-4,-5,]),'AND':([1,6,10,14,18,19,20,21,22,24,25,26,28,29,30,31,32,33,],[7,-14,7,7,7,7,7,7,7,7,7,7,7,7,7,-13,7,7,]),'OR':([1,6,10,14,18,19,20,21,22,24,25,26,28,29,30,31,32,33,],[8,-14,8,8,8,8,8,8,8,8,8,8,8,8,8,-13,8,8,]),'IMPLIES':([1,6,10,14,18,19,20,21,22,24,25,26,28,29,30,31,32,33,],[9,-14,9,9,9,9,9,9,9,9,9,9,9,9,9,-13,9,9,]),'GLOBALLY':([2,3,],[11,15,]),'NEXT':([2,3,],[12,16,]),'EVENTUALLY':([2,3,],[13,17,]),'UNTIL':([6,10,14,18,20,21,22,24,25,26,28,29,30,31,32,33,],[-14,23,27,-12,-1,-2,-3,-6,-7,-8,-9,-10,-11,-13,-4,-5,]),'RPAREN':([6,18,19,20,21,22,24,25,26,28,29,30,31,32,33,],[-14,-12,31,-1,-2,-3,-6,-7,-8,-9,-10,-11,-13,-4,-5,]),}
 
 _lr_action = {}
 for _k, _v in _lr_action_items.items():
@@ -17,7 +17,7 @@ for _k, _v in _lr_action_items.items():
       _lr_action[_x][_k] = _y
 del _lr_action_items
 
-_lr_goto_items = {'expression':([0,2,3,4,6,7,8,10,11,12,18,],[1,9,13,14,15,16,17,19,20,21,23,]),}
+_lr_goto_items = {'expression':([0,2,3,4,5,7,8,9,11,12,13,15,16,17,23,27,],[1,10,14,18,19,20,21,22,24,25,26,28,29,30,32,33,]),}
 
 _lr_goto = {}
 for _k, _v in _lr_goto_items.items():
@@ -27,14 +27,18 @@ for _k, _v in _lr_goto_items.items():
 del _lr_goto_items
 _lr_productions = [
   ("S' -> expression","S'",1,None,None,None),
-  ('expression -> expression AND expression','expression',3,'p_expression_binary','natatlParser.py',47),
-  ('expression -> expression OR expression','expression',3,'p_expression_binary','natatlParser.py',48),
-  ('expression -> expression IMPLIES expression','expression',3,'p_expression_binary','natatlParser.py',49),
-  ('expression -> COALITION expression UNTIL expression','expression',4,'p_expression_ternary','natatlParser.py',57),
-  ('expression -> COALITION GLOBALLY expression','expression',3,'p_expression_unary','natatlParser.py',67),
-  ('expression -> COALITION NEXT expression','expression',3,'p_expression_unary','natatlParser.py',68),
-  ('expression -> COALITION EVENTUALLY expression','expression',3,'p_expression_unary','natatlParser.py',69),
-  ('expression -> NOT expression','expression',2,'p_expression_not','natatlParser.py',80),
-  ('expression -> LPAREN expression RPAREN','expression',3,'p_expression_group','natatlParser.py',85),
-  ('expression -> PROP','expression',1,'p_expression_prop','natatlParser.py',90),
+  ('expression -> expression AND expression','expression',3,'p_expression_binary','CTLparser.py',42),
+  ('expression -> expression OR expression','expression',3,'p_expression_binary','CTLparser.py',43),
+  ('expression -> expression IMPLIES expression','expression',3,'p_expression_binary','CTLparser.py',44),
+  ('expression -> FORALL expression UNTIL expression','expression',4,'p_expression_ternary','CTLparser.py',48),
+  ('expression -> EXIST expression UNTIL expression','expression',4,'p_expression_ternary','CTLparser.py',49),
+  ('expression -> FORALL GLOBALLY expression','expression',3,'p_expression_unary','CTLparser.py',53),
+  ('expression -> FORALL NEXT expression','expression',3,'p_expression_unary','CTLparser.py',54),
+  ('expression -> FORALL EVENTUALLY expression','expression',3,'p_expression_unary','CTLparser.py',55),
+  ('expression -> EXIST GLOBALLY expression','expression',3,'p_expression_unary','CTLparser.py',56),
+  ('expression -> EXIST NEXT expression','expression',3,'p_expression_unary','CTLparser.py',57),
+  ('expression -> EXIST EVENTUALLY expression','expression',3,'p_expression_unary','CTLparser.py',58),
+  ('expression -> NOT expression','expression',2,'p_expression_not','CTLparser.py',62),
+  ('expression -> LPAREN expression RPAREN','expression',3,'p_expression_group','CTLparser.py',66),
+  ('expression -> PROP','expression',1,'p_expression_prop','CTLparser.py',70),
 ]

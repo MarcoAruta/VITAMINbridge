@@ -651,7 +651,7 @@ def display_MCMAS():
     st.write(f"    ")
     st.write(f"    ")
     st.markdown('Logic Selection ')
-    Logic=st.selectbox('Select your logic',['ATL','CTL','LTL','SL','CapATL', 'OL', 'OATL', 'RBATL', 'RABATL'])
+    Logic=st.selectbox('Select your logic',['ATL','CTL','LTL','SL','CapATL', 'OL', 'OATL', 'RBATL', 'RABATL', 'NatATL'])
     st.write(f"    ")
     st.write(f"    ")
     formula=st.text_input('Write your formula',' ')
@@ -783,9 +783,9 @@ def display_MS(page):
         st.write(result['res'])
         st.write(result['initial_state'])
       elif Logic == 'NatATL':
-        from model_checker_interface.explicit.NatATL import process_data
-        result = process_data(filename, formula)
-        del process_data
+        from model_checker_interface.explicit.NatATL import NatATL
+        result = NatATL.model_checking(formula, filename)
+        del NatATL
         st.write(result)
       elapsed_time = time.time() - start_time
       st.write("Execution time:", format_time(elapsed_time))

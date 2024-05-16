@@ -1,4 +1,4 @@
-from .modelCheckingCTL import *
-from .process_data import *
+from .NatATL import *
 from .pruning import *
 from .strategies import *
+from .NatATLtoCTL import *

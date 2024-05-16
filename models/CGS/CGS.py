@@ -137,9 +137,9 @@ class CGS():
     def translate_action_and_state_to_key(self, action_string, state):
         return action_string + ";" + state
 
-    def get_actions(self, graph, agents):
+    def get_actions(self, agents):
         # Convert the graph string to a list of lists
-        graph_list = graph
+        graph_list = self.graph
 
         # Create a dictionary to store actions for each agent
         actions_per_agent = {f"agent{agent}": [] for agent in agents}
@@ -304,3 +304,31 @@ class CGS():
             label_row = [self.get_label(i) if isinstance(elem, str) and elem != '*' else None for elem in row]
             label_matrix.append(label_row)
         return label_matrix
+    
+    # Validate transition matrix
+    # Use Example
+    #matrix = [['III', 0, 0, 0], [0, 'IIZ', 'ADZ,BDZ', 'ACZ,BCI'], ['ACZ,BDZ', 'ICZ', 'III', 'ADZ,BCZ'], [0, 'CIZ', 0, 'III']]
+    #n = 3
+    #parser(matrix, n)
+    def matrixParser(self, n):
+        for row in self.graph:
+            if all(elem == 0 for elem in row):
+                raise ValueError("All row elements are 0")
+
+            char_I_count = [0] * n
+
+            for elem in row:
+                if elem == 0:
+                    continue
+
+                strings = str(elem).split(',')
+                for s in strings:
+                    #if len(s) != n:
+                    #    raise ValueError(f"string length {s} for element {elem} is not equal to {n}")
+
+                    for i in range(n):
+                        if s[i] == 'I':
+                            char_I_count[i] += 1
+
+            if any(count == 0 for count in char_I_count):
+                raise ValueError("Idle error: There has to be at least one 'I' for each row")
