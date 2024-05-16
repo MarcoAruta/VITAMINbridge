@@ -787,6 +787,11 @@ def display_MS(page):
         result = NatATL.model_checking(formula, filename)
         del NatATL
         st.write(result)
+      elif Logic == 'CTL':
+        from model_checker_interface.explicit.CTL import CTL
+        result = CTL.model_checking(formula, filename)
+        del CTL
+        st.write(result)
       elapsed_time = time.time() - start_time
       st.write("Execution time:", format_time(elapsed_time))
       start_time = None
