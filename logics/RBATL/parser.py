@@ -40,7 +40,7 @@ t_NEXT = r'X|next'
 t_EVENTUALLY = r'F|eventually'
 t_FALSE = r'\#|false'
 t_TRUE = r'\@|true'
-t_PROP = r'[a-z]+'
+t_PROP = r'[a-z0-9]+'
 t_COALITION_BOUND = r'<\d+(?:,\d+)*><\d+(?:,\d+)*>'
 
 

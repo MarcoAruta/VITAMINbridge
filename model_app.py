@@ -121,11 +121,13 @@ def main():
       st.session_state.cmpt_model=0
       st.session_state.info_model=[]
       st.session_state.mat_transi=[]
+      st.session_state.costs=[]
       st.session_state.page=3
     if st.sidebar.button('2 - Expert User'):
       st.session_state.cmpt_model=0
       st.session_state.info_model=[]
       st.session_state.mat_transi=[]
+      st.session_state.costs=[]
       st.session_state.page=4
     # st.sidebar.markdown("---")
     # st.sidebar.markdown("Formal Verification of Attack Graphs")

@@ -684,26 +684,39 @@ def display_MS(page):
     elif st.session_state.cmpt_model==1:
       D_state()
     elif st.session_state.cmpt_model==2:
-      D_action()
+      D_resource()
     elif st.session_state.cmpt_model==3:
+      D_action()
+    elif st.session_state.cmpt_model==4:
       # st.session_state.mat_transi=[]
       Na=len(st.session_state.info_model[0][0])
       D_transition(Na-st.session_state.info_model[0][1]-1,Na)
-    elif st.session_state.cmpt_model==4:
+    elif st.session_state.cmpt_model==5:
+      # st.session_state.mat_transi=[]
+      st.session_state.info_model[0][1]=len(st.session_state.info_model[0][0])
+      D_cost()
+    elif st.session_state.cmpt_model==6:
       # st.session_state.mat_transi=[]
       st.session_state.info_model[0][1]=len(st.session_state.info_model[0][0])
       D_printgraph()
     # elif st.session_state.cmpt_model==5:
     #   Na=len(st.session_state.info_model[0][0])
     #   D_strategy(Na-st.session_state.info_model[0][1]-1,Na)
-    elif st.session_state.cmpt_model==5:
+    elif st.session_state.cmpt_model==7:
       D_logic()
-    elif st.session_state.cmpt_model==6:
-      from model_checker_interface.explicit.ATL import ATL
-      result = ATL.model_checking(st.session_state.info_model[5][1], 'data/tmp.txt')
-      del ATL
-      st.write(result['res'])
-      st.write(result['initial_state'])
+    elif st.session_state.cmpt_model==8:
+      if st.session_state.info_model[7][0] == 'RBATL':
+        from model_checker_interface.explicit.RBATL import RBATL
+        result = RBATL.model_checking(st.session_state.info_model[7][1], 'data/tmp.txt')
+        del RBATL
+        st.write(result['res'])
+        st.write(result['initial_state'])
+      else:
+        from model_checker_interface.explicit.ATL import ATL
+        result = ATL.model_checking(st.session_state.info_model[7][1], 'data/tmp.txt')
+        del ATL
+        st.write(result['res'])
+        st.write(result['initial_state'])
       
       #D_parser()
 
@@ -853,6 +866,19 @@ def D_state():
     st.session_state.cmpt_model=2
     st.experimental_rerun()
 
+def D_resource():
+  NS=st.selectbox('Number of Resources',[str(i) for i in range(0, 11)])
+  st.write("     ")
+  List_name_res=[]
+  for id_state in range(int(NS)):
+    tmp=st.text_input('Name of the resource '+str(id_state),'r'+str(id_state))
+    List_name_res.append(tmp)
+  st.write(f"     ")
+  if st.button('Next : To Action'):
+    (st.session_state.info_model).append(List_name_res)
+    st.session_state.cmpt_model=3
+    st.experimental_rerun()
+
 def D_action():
   Nact=st.selectbox('Number of Action',[str(i) for i in range(1, 25)])
   Alphabet=['A','B','C','D','E','F','G']
@@ -864,7 +890,7 @@ def D_action():
   st.write(f"     ")
   if st.button('Next : To Transition'):
     (st.session_state.info_model).append(List_name_action)
-    st.session_state.cmpt_model=3
+    st.session_state.cmpt_model=4
     st.experimental_rerun()
 
 
@@ -875,7 +901,7 @@ def D_transition(act_input,Na):
   Mat_transition=[]
   List_name_state=st.session_state.info_model[1]
   NS=len(List_name_state)
-  List_action=st.session_state.info_model[2]
+  List_action=st.session_state.info_model[3]
   for id_state1 in range(NS):
     List_transition=[]
     for id_state2 in range(int(NS)):
@@ -887,15 +913,51 @@ def D_transition(act_input,Na):
     if st.button('Next : To '+st.session_state.info_model[0][0][act_input+1]):
       st.session_state.info_model[0][1]+=(-1)
       (st.session_state.mat_transi).append(Mat_transition)
-      st.session_state.cmpt_model=3
+      st.session_state.cmpt_model=4
       st.experimental_rerun()
   else:
-    if st.button('Next : To Graph'):
-      (st.session_state.mat_transi).append(Mat_transition)
-      st.session_state.cmpt_model=4
-      Mat_to_Label()
-      st.experimental_rerun()
+    if st.session_state.info_model[2]:
+      if st.button('Next : To Cost'):
+        (st.session_state.mat_transi).append(Mat_transition)
+        st.session_state.cmpt_model=5
+        Mat_to_Label()
+        st.experimental_rerun()
+    else:
+      if st.button('Next : To Graph'):
+        (st.session_state.mat_transi).append(Mat_transition)
+        st.session_state.cmpt_model=6
+        Mat_to_Label()
+        st.session_state.info_model.append([])
+        st.experimental_rerun()
 
+def D_cost():
+  st.write('Add the costs for the actions')
+  st.write("     ")
+  Costs=[]
+  for i in range(0, len(st.session_state.info_model[4])):
+     from_state = st.session_state.info_model[1][i]
+     for j in range(0, len(st.session_state.info_model[4][i])):
+        to_state = st.session_state.info_model[1][j]
+        if 'No Action' not in st.session_state.info_model[4][i][j]:
+          res = (from_state, st.session_state.info_model[4][i][j], [])
+          for k in range(0, len(st.session_state.info_model[2])):
+             tmp=st.selectbox(f'Cost of joint action {st.session_state.info_model[4][i][j]} in {from_state} to state {to_state} for resource {st.session_state.info_model[2][k]}', range(0, 11))
+             res[2].append(tmp)
+          Costs.append(res)
+  # NS=len(List_name_state)
+  # List_action=st.session_state.info_model[2]
+  # for id_state1 in range(NS):
+  #   List_transition=[]
+  #   for id_state2 in range(int(NS)):
+  #     tmp=st.multiselect('Action of '+st.session_state.info_model[0][0][act_input]+ ' in the state '+List_name_state[id_state1]+' to '+List_name_state[id_state2]+'.',List_action,List_action[1])
+  #     List_transition.append(tmp)
+  #   Mat_transition.append(List_transition)
+  # st.write("     ")
+  if st.button('Next : To Graph'):
+    st.session_state.info_model.append(Costs)
+    st.session_state.cmpt_model=6
+    # Mat_to_Label()
+    st.experimental_rerun()
 
 def Mat_to_Label():
   def concat(list_str):
@@ -924,17 +986,17 @@ def D_printgraph():
   st.write('Graph')
   st.write("     ")
   st.markdown('#### iii - Diagram: ')
-  test=display_graph_MS(st.session_state.info_model[3],st.session_state.info_model[0][0],st.session_state.info_model[1])
+  test=display_graph_MS(st.session_state.info_model[4],st.session_state.info_model[0][0],st.session_state.info_model[1])
   st.graphviz_chart(test)
   
-  store(st.session_state.info_model[0][0], st.session_state.info_model[1], st.session_state.info_model[2], st.session_state.info_model[3], 'data/tmp.txt')
+  store(st.session_state.info_model[0][0], st.session_state.info_model[1], st.session_state.info_model[5], st.session_state.info_model[3], st.session_state.info_model[4], 'data/tmp.txt')
   
   if st.button('Next : To Logic'):
     (st.session_state.info_model).append(test)
-    st.session_state.cmpt_model=5
+    st.session_state.cmpt_model=7
     st.experimental_rerun()
 
-def store(agents, states, actions, transitions, path):
+def store(agents, states, costs, actions, transitions, path):
    with open(path, 'w') as file:
       no_actions = '|'.join(['No Action' for i in range(0, len(agents))])
       revised_transitions = ''
@@ -969,14 +1031,19 @@ Labelling
 {labels}
 Number_of_agents
 {l_agents}
-''') 
+''')
+      if costs:
+         file.write('Costs_for_actions\n')
+         for c in costs:
+            file.write('{a} {s}${res}'.format(a=c[1].replace('|', ''), s=c[0], res=':'.join([str(v) for v in c[2]])))
+            file.write('\n')
 
 def D_logic():
   # st.header("Model Checking for MAS")
   st.write(f"    ")
   st.write(f"    ")
   st.markdown('Logic Selection ')
-  Logic=st.selectbox('Select your logic',['ATL','CTL','LTL','SL'])
+  Logic=st.selectbox('Select your logic',['ATL','RBATL'])
 
   st.write(f"    ")
   st.write(f"    ")
@@ -990,7 +1057,7 @@ def D_logic():
   st.write(str(list_type))
   if st.button('Next : To Model Checking'):
     (st.session_state.info_model).append([Logic,formula])
-    st.session_state.cmpt_model=6
+    st.session_state.cmpt_model=8
     st.experimental_rerun()
 
 
@@ -1023,12 +1090,12 @@ def D_strategy(act_input,id_state1):
     if st.button('Next : To '+st.session_state.info_model[0][0][act_input+1]):
       st.session_state.info_model[0][1]+=(-1)
       (st.session_state.mat_transi).append(List_strategy)
-      st.session_state.cmpt_model=5
+      st.session_state.cmpt_model=6
       st.experimental_rerun()
   else:
     if st.button('Next : To Logic'):
       (st.session_state.mat_transi).append(List_strategy)
-      st.session_state.cmpt_model=6
+      st.session_state.cmpt_model=7
       st.session_state.info_model.append(st.session_state.mat_transi)
       print(st.session_state.info_model)
       st.experimental_rerun()
