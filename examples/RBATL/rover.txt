@@ -43,4 +43,4 @@ Labelling
 0 0 0 0 0 0 0 0
 0 0 0 0 0 0 0 0
 Number_of_agents
-2
+3
