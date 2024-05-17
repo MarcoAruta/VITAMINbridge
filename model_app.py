@@ -147,7 +147,7 @@ if __name__=='__main__':
 
 st.markdown(" ")
 st.markdown("### ** 👨🏼‍💻 Developers and Researchers: **")
-st.image(['images/vadim.png', 'images/angelo.png', 'images/giulia.png', 'images/marco.png'], width=110, caption=["Vadim Malvone", "Angelo Ferrando", "Giulia Luongo", "Marco Aruta"])
+st.image(['images/vadim.jpg', 'images/angelo.jpg', 'images/giulia.jpg', 'images/marco.jpg'], width=110, caption=["Vadim Malvone", "Angelo Ferrando", "Giulia Luongo", "Marco Aruta"])
 
 # st.image(images, width=250)
 # st.write('    ')
