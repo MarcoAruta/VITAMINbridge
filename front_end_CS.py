@@ -1,3 +1,4 @@
+import string
 import time
 
 import streamlit as st
@@ -684,36 +685,40 @@ def display_MS(page):
     elif st.session_state.cmpt_model==1:
       D_state()
     elif st.session_state.cmpt_model==2:
-      D_resource()
+      D_atoms()
     elif st.session_state.cmpt_model==3:
-      D_action()
+      D_state_atoms()
     elif st.session_state.cmpt_model==4:
+      D_resource()
+    elif st.session_state.cmpt_model==5:
+      D_action()
+    elif st.session_state.cmpt_model==6:
       # st.session_state.mat_transi=[]
       Na=len(st.session_state.info_model[0][0])
       D_transition(Na-st.session_state.info_model[0][1]-1,Na)
-    elif st.session_state.cmpt_model==5:
+    elif st.session_state.cmpt_model==7:
       # st.session_state.mat_transi=[]
       st.session_state.info_model[0][1]=len(st.session_state.info_model[0][0])
       D_cost()
-    elif st.session_state.cmpt_model==6:
+    elif st.session_state.cmpt_model==8:
       # st.session_state.mat_transi=[]
       st.session_state.info_model[0][1]=len(st.session_state.info_model[0][0])
       D_printgraph()
     # elif st.session_state.cmpt_model==5:
     #   Na=len(st.session_state.info_model[0][0])
     #   D_strategy(Na-st.session_state.info_model[0][1]-1,Na)
-    elif st.session_state.cmpt_model==7:
+    elif st.session_state.cmpt_model==9:
       D_logic()
-    elif st.session_state.cmpt_model==8:
-      if st.session_state.info_model[7][0] == 'RBATL':
+    elif st.session_state.cmpt_model==10:
+      if st.session_state.info_model[9][0] == 'RBATL':
         from model_checker_interface.explicit.RBATL import RBATL
-        result = RBATL.model_checking(st.session_state.info_model[7][1], 'data/tmp.txt')
+        result = RBATL.model_checking(st.session_state.info_model[9][1], 'data/tmp.txt')
         del RBATL
         st.write(result['res'])
         st.write(result['initial_state'])
       else:
         from model_checker_interface.explicit.ATL import ATL
-        result = ATL.model_checking(st.session_state.info_model[7][1], 'data/tmp.txt')
+        result = ATL.model_checking(st.session_state.info_model[9][1], 'data/tmp.txt')
         del ATL
         st.write(result['res'])
         st.write(result['initial_state'])
@@ -846,7 +851,7 @@ def D_agent():
     tmp=st.text_input('Name of the agent number '+str(id_agent),'A'+str(id_agent))
     List_name_agent.append(tmp)
   st.write(f"    ")
-  if st.button('Next : To Agent'):
+  if st.button('Next : To State'):
     (st.session_state.info_model).append([List_name_agent,len(List_name_agent)-1])
     st.session_state.cmpt_model=1
     print(st.session_state.info_model[0])
@@ -861,9 +866,37 @@ def D_state():
     tmp=st.text_input('Name of the state number '+str(id_state),'s'+str(id_state))
     List_name_state.append(tmp)
   st.write(f"     ")
-  if st.button('Next : To Action'):
+  if st.button('Next : To Atoms'):
     (st.session_state.info_model).append(List_name_state)
     st.session_state.cmpt_model=2
+    st.experimental_rerun()
+
+def D_atoms():
+  NS=st.selectbox('Number of Atoms',[str(i) for i in range(1, 25)])
+  st.write("     ")
+  List_name_atoms=[]
+  for id_state in range(int(NS)):
+    tmp=st.text_input('Name of the atom '+str(id_state),'ap'+str(id_state))
+    List_name_atoms.append(tmp)
+  st.write(f"     ")
+  if st.button('Next : To State-Atoms'):
+    st.session_state.info_model.append(List_name_atoms)
+    st.session_state.cmpt_model=3
+    st.experimental_rerun()
+
+def D_state_atoms():
+  st.write('For each state')
+  st.write("     ")
+  List_name_state=st.session_state.info_model[1]
+  NS=len(List_name_state)
+  List_atoms=st.session_state.info_model[2]
+  atoms = []
+  for id_state in range(NS):
+    tmp=st.multiselect(f'Labels of state {List_name_state[id_state]}', List_atoms,List_atoms[0])
+    atoms.append((tmp))
+  if st.button('Next : To Resources'):
+    st.session_state.info_model.append(atoms)
+    st.session_state.cmpt_model=4
     st.experimental_rerun()
 
 def D_resource():
@@ -874,23 +907,23 @@ def D_resource():
     tmp=st.text_input('Name of the resource '+str(id_state),'r'+str(id_state))
     List_name_res.append(tmp)
   st.write(f"     ")
-  if st.button('Next : To Action'):
+  if st.button('Next : To Actions'):
     (st.session_state.info_model).append(List_name_res)
-    st.session_state.cmpt_model=3
+    st.session_state.cmpt_model=5
     st.experimental_rerun()
 
 def D_action():
   Nact=st.selectbox('Number of Action',[str(i) for i in range(1, 25)])
-  Alphabet=['A','B','C','D','E','F','G']
+  Alphabet=list(string.ascii_uppercase)
   st.write("     ")
   List_name_action=['*','No Action']
   for id_action in range(int(Nact)):
     tmp=st.text_input('Name of the action number '+str(id_action),Alphabet[id_action])
     List_name_action.append(tmp)
   st.write(f"     ")
-  if st.button('Next : To Transition'):
+  if st.button('Next : To Transitions'):
     (st.session_state.info_model).append(List_name_action)
-    st.session_state.cmpt_model=4
+    st.session_state.cmpt_model=6
     st.experimental_rerun()
 
 
@@ -901,7 +934,7 @@ def D_transition(act_input,Na):
   Mat_transition=[]
   List_name_state=st.session_state.info_model[1]
   NS=len(List_name_state)
-  List_action=st.session_state.info_model[3]
+  List_action=st.session_state.info_model[5]
   for id_state1 in range(NS):
     List_transition=[]
     for id_state2 in range(int(NS)):
@@ -913,19 +946,19 @@ def D_transition(act_input,Na):
     if st.button('Next : To '+st.session_state.info_model[0][0][act_input+1]):
       st.session_state.info_model[0][1]+=(-1)
       (st.session_state.mat_transi).append(Mat_transition)
-      st.session_state.cmpt_model=4
+      st.session_state.cmpt_model=6
       st.experimental_rerun()
   else:
-    if st.session_state.info_model[2]:
+    if st.session_state.info_model[4]:
       if st.button('Next : To Cost'):
         (st.session_state.mat_transi).append(Mat_transition)
-        st.session_state.cmpt_model=5
+        st.session_state.cmpt_model=7
         Mat_to_Label()
         st.experimental_rerun()
     else:
       if st.button('Next : To Graph'):
         (st.session_state.mat_transi).append(Mat_transition)
-        st.session_state.cmpt_model=6
+        st.session_state.cmpt_model=8
         Mat_to_Label()
         st.session_state.info_model.append([])
         st.experimental_rerun()
@@ -934,14 +967,14 @@ def D_cost():
   st.write('Add the costs for the actions')
   st.write("     ")
   Costs=[]
-  for i in range(0, len(st.session_state.info_model[4])):
+  for i in range(0, len(st.session_state.info_model[6])):
      from_state = st.session_state.info_model[1][i]
-     for j in range(0, len(st.session_state.info_model[4][i])):
+     for j in range(0, len(st.session_state.info_model[6][i])):
         to_state = st.session_state.info_model[1][j]
-        if 'No Action' not in st.session_state.info_model[4][i][j]:
-          res = (from_state, st.session_state.info_model[4][i][j], [])
-          for k in range(0, len(st.session_state.info_model[2])):
-             tmp=st.selectbox(f'Cost of joint action {st.session_state.info_model[4][i][j]} in {from_state} to state {to_state} for resource {st.session_state.info_model[2][k]}', range(0, 11))
+        if 'No Action' not in st.session_state.info_model[6][i][j]:
+          res = (from_state, st.session_state.info_model[6][i][j], [])
+          for k in range(0, len(st.session_state.info_model[4])):
+             tmp=st.selectbox(f'Cost of joint action {st.session_state.info_model[6][i][j]} in {from_state} to state {to_state} for resource {st.session_state.info_model[4][k]}', range(0, 11))
              res[2].append(tmp)
           Costs.append(res)
   # NS=len(List_name_state)
@@ -955,7 +988,7 @@ def D_cost():
   # st.write("     ")
   if st.button('Next : To Graph'):
     st.session_state.info_model.append(Costs)
-    st.session_state.cmpt_model=6
+    st.session_state.cmpt_model=8
     # Mat_to_Label()
     st.experimental_rerun()
 
@@ -986,17 +1019,17 @@ def D_printgraph():
   st.write('Graph')
   st.write("     ")
   st.markdown('#### iii - Diagram: ')
-  test=display_graph_MS(st.session_state.info_model[4],st.session_state.info_model[0][0],st.session_state.info_model[1])
+  test=display_graph_MS(st.session_state.info_model[6],st.session_state.info_model[0][0],st.session_state.info_model[1])
   st.graphviz_chart(test)
   
-  store(st.session_state.info_model[0][0], st.session_state.info_model[1], st.session_state.info_model[5], st.session_state.info_model[3], st.session_state.info_model[4], 'data/tmp.txt')
+  store(st.session_state.info_model[0][0], st.session_state.info_model[1], st.session_state.info_model[2], st.session_state.info_model[3], st.session_state.info_model[7], st.session_state.info_model[5], st.session_state.info_model[6], 'data/tmp.txt')
   
   if st.button('Next : To Logic'):
     (st.session_state.info_model).append(test)
-    st.session_state.cmpt_model=7
+    st.session_state.cmpt_model=9
     st.experimental_rerun()
 
-def store(agents, states, costs, actions, transitions, path):
+def store(agents, states, atoms, labelling, costs, actions, transitions, path):
    with open(path, 'w') as file:
       no_actions = '|'.join(['No Action' for i in range(0, len(agents))])
       revised_transitions = ''
@@ -1009,14 +1042,23 @@ def store(agents, states, costs, actions, transitions, path):
         revised_transitions += '\n'
       revised_transitions = revised_transitions[:-1]
       labels = ''
-      for i in range(0, len(states)):
-        for j in range(0, len(states)):
-          if i == j:
+      for state_labels in labelling:
+        for atom in atoms:
+          if atom in state_labels:
             labels += '1 '
           else:
             labels += '0 '
         labels += '\n'
       labels = labels[:-1]
+      # labels = ''
+      # for i in range(0, len(states)):
+      #   for j in range(0, len(states)):
+      #     if i == j:
+      #       labels += '1 '
+      #     else:
+      #       labels += '0 '
+      #   labels += '\n'
+      # labels = labels[:-1]
       l_agents= len(agents)
       file.write(f'''
 Transition
@@ -1026,7 +1068,7 @@ Name_State
 Initial_State
 s0
 Atomic_propositions
-{' '.join(states)}
+{' '.join(atoms)}
 Labelling
 {labels}
 Number_of_agents
@@ -1057,7 +1099,7 @@ def D_logic():
   st.write(str(list_type))
   if st.button('Next : To Model Checking'):
     (st.session_state.info_model).append([Logic,formula])
-    st.session_state.cmpt_model=8
+    st.session_state.cmpt_model=10
     st.experimental_rerun()
 
 

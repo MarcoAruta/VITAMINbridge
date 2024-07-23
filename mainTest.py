@@ -1,11 +1,68 @@
-from model_checker_interface.explicit import RABATL
-from model_checker_interface.explicit import RBATL
 import time
 
+from model_checker_interface.explicit import RBATL
+start = time.time()
+result = RBATL.model_checking('<1><0,0>F(oc && rm && <1><0,0>F((pl || pr) && <1><0,0>F(oc && rm)))', './examples/RBATL/rover.txt')
+end = time.time()
+print('phi1')
+print(result)
+print('TIME:', end-start, 'seconds')
+start = time.time()
+result = RBATL.model_checking('<1,2><5,1>F(oc && rm && <1><0,0>F((pl || pr) && <1><0,0>F(oc && rm)))', './examples/RBATL/rover.txt')
+end = time.time()
+print('phi2')
+print(result)
+print('TIME:', end-start, 'seconds')
+start = time.time()
+result = RBATL.model_checking('<1,2><2,2>F(oc && rm && <1><0,0>F((pl || pr) && <1><0,0>F(oc && rm)))', './examples/RBATL/rover.txt')
+end = time.time()
+print('phi2_rb')
+print(result)
+print('TIME:', end-start, 'seconds')
+del RBATL
 
-# result  = RABATL.model_checking('(<1,2,3><6,6>F h)', './examples/RABATL/RABATL_model.txt')
-result  = RABATL.model_checking('(<1,2><20,20>F p)', './examples/RABATL/sensor_network.txt')
-# result  = RBATL.model_checking('(<1,2,3><5,5>F h)', './examples/RBATL/RBATL_model.txt')
+
+
+
+# for i in range(2, 11):
+#     print('N. of resources: ', i)
+#     start = time.time()
+#     result  = RABATL.model_checking('(<1,2><{res}>F p)'.format(res=','.join(['2']*i)), f'./examples/RABATL/sensor_network{i}.txt')
+#     end = time.time()
+#     # print(result)
+#     print('TIME:', end-start, 'seconds')
+
+
+
+
+# RB-ATL
+# Resources: 1 energy, 1 memory 
+# TIME: 0.006029605865478516 seconds
+# Resources: 2 energy, 2 memory 
+# TIME: 0.21443557739257812 seconds
+# Resources: 3 energy, 3 memory 
+# TIME: 7.137519121170044 seconds
+# Resources: 4 energy, 4 memory 
+# TIME: 261.43060302734375 seconds
+
+# RAB-ATL
+# Resources: 1 energy, 1 memory 
+# TIME: 0.007246255874633789 seconds
+# Resources: 2 energy, 2 memory 
+# TIME: 0.19492864608764648 seconds
+# Resources: 3 energy, 3 memory 
+# TIME: 5.23409366607666 seconds
+# Resources: 4 energy, 4 memory 
+# TIME: 177.9505763053894 seconds
+
+
+
+# start = time.time()
+# result  = RBATL.model_checking('(<1,2><2,2,2,2,2,2,2,2,2,2>F p)', './examples/RBATL/sensor_network4.txt')
+# end = time.time()
+# print(result)
+# print('TIME:', end-start, 'seconds')
+# result  = RBATL.model_checking('(<1,2,3><2,2>F h)', './examples/RBATL/RBATL_model.txt')
 
 # n = 10
 

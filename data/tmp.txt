@@ -1,15 +1,33 @@
 
 Transition
-0 AA 
-0 0 
+i* chkca chkcw chkcm 0 0 0 0 0 0 0 
+0 cmcwok 0 0 caok 0 0 0 0 *nok 0 
+0 0 cacmok 0 cwok 0 0 0 0 *nok 0 
+0 0 0 cacwok cmok 0 0 0 0 *nok 0 
+0 0 0 0 ii 0 Li Ri 0 0 0 
+0 0 0 0 0 0 ii 0 0 0 0 
+0 0 0 0 Ri mpi 0 0 0 0 Li 
+0 0 0 0 Li 0 0 0 mpi 0 Ri 
+0 0 0 0 0 0 0 No Actioni 0 0 0 
+0 0 0 0 0 0 0 0 0 ** 0 
+0 0 0 0 0 0 0 0 0 0 ** 
 Name_State
-s0 s1
+sI s1 s2 s3 s4 s5 s6 s7 s8 e1 e2
 Initial_State
 s0
 Atomic_propositions
-s0 s1
+ap0
 Labelling
-1 0 
-0 1 
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+1 
 Number_of_agents
 2
