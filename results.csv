@@ -1,2 +1,4 @@
-# States; # Resources; RBATL time [sec]; RABATL time [sec]
-10;2;
+# States; # Agents; ATL time [sec]
+10;2;0.05991816520690918
+10;3;3.8762489318847657
+10;4;

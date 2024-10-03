@@ -11,10 +11,10 @@ import streamlit as st
 # from logics.NatATL import *
 from back_end_CS import *
 import os
-from models import *
+from vitamin_model_checker.models import *
 from pathlib import *
-from xml_data import *
-from xml_data.writting import writting
+# from vitamin_model_checker.xml_data import *
+# from vitamin_model_checker.xml_data.writting import writting
 
 
 def display_case(nlp_steps):
@@ -711,13 +711,13 @@ def display_MS(page):
       D_logic()
     elif st.session_state.cmpt_model==10:
       if st.session_state.info_model[9][0] == 'RBATL':
-        from model_checker_interface.explicit.RBATL import RBATL
+        from vitamin_model_checker.model_checker_interface.explicit.RBATL import RBATL
         result = RBATL.model_checking(st.session_state.info_model[9][1], 'data/tmp.txt')
         del RBATL
         st.write(result['res'])
         st.write(result['initial_state'])
       else:
-        from model_checker_interface.explicit.ATL import ATL
+        from vitamin_model_checker.model_checker_interface.explicit.ATL import ATL
         result = ATL.model_checking(st.session_state.info_model[9][1], 'data/tmp.txt')
         del ATL
         st.write(result['res'])
@@ -760,53 +760,53 @@ def display_MS(page):
     if st.button('Next : To Model Checking'):
       start_time = time.time()
       if Logic == 'ATL':
-        from model_checker_interface.explicit.ATL import ATL
+        from vitamin_model_checker.model_checker_interface.explicit.ATL import ATL
         result = ATL.model_checking(formula, filename)
         del ATL
         st.write(result['res'])
         st.write(result['initial_state'])
       elif Logic == 'CapATL':
-        from model_checker_interface.explicit.CapATL import CapATL
+        from vitamin_model_checker.model_checker_interface.explicit.CapATL import CapATL
         result = CapATL.model_checking(formula, filename)
         del CapATL
         st.write(result)
         # st.write(result['initial_state'])
       elif Logic == 'ATLF':
-        from model_checker_interface.explicit.ATLF import ATLF
+        from vitamin_model_checker.model_checker_interface.explicit.ATLF import ATLF
         result  = ATLF.model_checking(formula, filename)
         del ATLF
         st.write(result['res'])
         st.write(result['initial_state'])
       elif Logic == 'OL':
-        from model_checker_interface.explicit.OL import OL
+        from vitamin_model_checker.model_checker_interface.explicit.OL import OL
         result  = OL.model_checking(formula, filename)
         del OL
         st.write(result['res'])
       elif Logic == 'OATL':
-        from model_checker_interface.explicit.OATL import OATL
+        from vitamin_model_checker.model_checker_interface.explicit.OATL import OATL
         result  = OATL.model_checking(formula, filename)
         del OATL
         st.write(result['res'])
         st.write(result['initial_state'])
       elif Logic == 'RBATL':
-        from model_checker_interface.explicit.RBATL import RBATL
+        from vitamin_model_checker.model_checker_interface.explicit.RBATL import RBATL
         result  = RBATL.model_checking(formula, filename)
         del RBATL
         st.write(result['res'])
         st.write(result['initial_state'])
       elif Logic == 'RABATL':
-        from model_checker_interface.explicit.RABATL import RABATL
+        from vitamin_model_checker.model_checker_interface.explicit.RABATL import RABATL
         result  = RABATL.model_checking(formula, filename)
         del RABATL
         st.write(result['res'])
         st.write(result['initial_state'])
       elif Logic == 'NatATL':
-        from model_checker_interface.explicit.NatATL import NatATL
+        from vitamin_model_checker.model_checker_interface.explicit.NatATL import NatATL
         result = NatATL.model_checking(formula, filename)
         del NatATL
         st.write(result)
       elif Logic == 'CTL':
-        from model_checker_interface.explicit.CTL import CTL
+        from vitamin_model_checker.model_checker_interface.explicit.CTL import CTL
         result = CTL.model_checking(formula, filename)
         del CTL
         st.write(result)
@@ -834,7 +834,7 @@ def display_MS(page):
       #          --> formula
       cgs,formula = mapAttackGraphToCGS(xml)
       if st.button('Next : To Model Checking'):
-        from model_checker_interface.explicit.ATL import ATL
+        from vitamin_model_checker.model_checker_interface.explicit.ATL import ATL
         result = ATL.model_checking(formula, cgs)
         del ATL
         st.write(result['res'])

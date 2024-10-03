@@ -1,25 +1,30 @@
 import time
 
-from model_checker_interface.explicit import RBATL
-start = time.time()
-result = RBATL.model_checking('<1><0,0>F(oc && rm && <1><0,0>F((pl || pr) && <1><0,0>F(oc && rm)))', './examples/RBATL/rover.txt')
-end = time.time()
-print('phi1')
-print(result)
-print('TIME:', end-start, 'seconds')
-start = time.time()
-result = RBATL.model_checking('<1,2><5,1>F(oc && rm && <1><0,0>F((pl || pr) && <1><0,0>F(oc && rm)))', './examples/RBATL/rover.txt')
-end = time.time()
-print('phi2')
-print(result)
-print('TIME:', end-start, 'seconds')
-start = time.time()
-result = RBATL.model_checking('<1,2><2,2>F(oc && rm && <1><0,0>F((pl || pr) && <1><0,0>F(oc && rm)))', './examples/RBATL/rover.txt')
-end = time.time()
-print('phi2_rb')
-print(result)
-print('TIME:', end-start, 'seconds')
-del RBATL
+# from vitamin_model_checker.model_checker_interface.explicit import RBATL
+# start = time.time()
+# result = RBATL.model_checking('<1><0,0>F(oc && rm && <1><0,0>F((pl || pr) && <1><0,0>F(oc && rm)))', './examples/RBATL/rover.txt')
+# end = time.time()
+# print('phi1')
+# print(result)
+# print('TIME:', end-start, 'seconds')
+# start = time.time()
+# result = RBATL.model_checking('<1,2><5,1>F(oc && rm && <1><0,0>F((pl || pr) && <1><0,0>F(oc && rm)))', './examples/RBATL/rover.txt')
+# end = time.time()
+# print('phi2')
+# print(result)
+# print('TIME:', end-start, 'seconds')
+# start = time.time()
+# result = RBATL.model_checking('<1,2><2,2>F(oc && rm && <1><0,0>F((pl || pr) && <1><0,0>F(oc && rm)))', './examples/RBATL/rover.txt')
+# end = time.time()
+# print('phi2_rb')
+# print(result)
+# print('TIME:', end-start, 'seconds')
+# del RBATL
+
+from vitamin_model_checker.model_checker_interface.explicit.RABATL import RABATL
+print(RABATL.model_checking('<1,2,3,4><4>F(p1 && q2 && s4 && r3)', 'tmp'))
+# <1,2,3,4><10>F(p0 && q1 && q2 && r2 && p2 && p3)
+
 
 
 

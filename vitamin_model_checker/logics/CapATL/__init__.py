@@ -1,0 +1,1 @@
+from vitamin_model_checker.logics.CapATL.parser import *

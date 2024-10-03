@@ -1,4 +1,4 @@
-from model_checker_interface.explicit.NatATL.NatATL import model_checking
+from vitamin_model_checker.model_checker_interface.explicit.NatATL.NatATL import model_checking
 
 
 path = './examples/NatATL/exampleModel1.txt'
