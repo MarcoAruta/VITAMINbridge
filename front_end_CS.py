@@ -1105,15 +1105,15 @@ def D_logic():
     # (st.session_state.info_model).append([Logic,formula])
     # st.session_state.cmpt_model=10
     # st.experimental_rerun()
-    if st.session_state.info_model[9][0] == 'RBATL':
+    if Logic == 'RBATL':
         from vitamin_model_checker.model_checker_interface.explicit.RBATL import RBATL
-        result = RBATL.model_checking(st.session_state.info_model[9][1], 'data/tmp.txt')
+        result = RBATL.model_checking(formula, 'data/tmp.txt')
         del RBATL
         st.write(result['res'])
         st.write(result['initial_state'])
     else:
       from vitamin_model_checker.model_checker_interface.explicit.ATL import ATL
-      result = ATL.model_checking(st.session_state.info_model[9][1], 'data/tmp.txt')
+      result = ATL.model_checking(formula, 'data/tmp.txt')
       del ATL
       st.write(result['res'])
       st.write(result['initial_state'])
