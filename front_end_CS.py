@@ -469,8 +469,11 @@ def upload_file_handler():
         # st.write(bytes_data)
         # st.write(data[1])
         # st.write(type(data))
+        s = ''
         for line in data:
             f.write(str(line) + '\n')
+            s += str(line) + '\n'
+        filename = 'data/' + str(uploaded_file.name)
   else:
     filename=file_select()
     st.info('You selected {}'.format(filename))
@@ -566,6 +569,7 @@ def upload_xml_file_handler():
         # st.write(type(data))
         for line in data:
             f.write(str(line) + '\n')
+        filename = 'xml_data/' + str(uploaded_file.name)
   else:
     filename=file_select()
     st.info('You selected {}'.format(filename))
