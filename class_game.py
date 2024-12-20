@@ -56,7 +56,7 @@ class game:
       f.node(self.list_agent[Special_node].name,style='filled', fillcolor='red')
     for id_agent in range(self.Ag):
       for id_transition in range(len(self.list_agent[id_agent].list_transition)):
-        if type(self.list_agent[id_agent].list_transition[id_transition])==str and self.list_agent[id_agent].list_transition[id_transition] !='No Action':
+        if type(self.list_agent[id_agent].list_transition[id_transition])==str and 'NoAction' not in self.list_agent[id_agent].list_transition[id_transition]:
           f.edge(self.list_agent[id_agent].name,self.list_agent[id_transition].name,label=str(self.list_agent[id_agent].list_transition[id_transition]))
     return f
 
