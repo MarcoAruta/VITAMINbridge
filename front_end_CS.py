@@ -1039,7 +1039,7 @@ def store(agents, states, atoms, labelling, costs, actions, transitions, path):
       revised_transitions = ''
       for tr in transitions:
         for act in tr:
-           if act == no_actions:
+           if 'NoAction' in act: #act == no_actions:
               revised_transitions += '0 '
            else:
               revised_transitions += act.replace('|', '') + ' '

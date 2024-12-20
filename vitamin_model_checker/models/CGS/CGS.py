@@ -80,7 +80,7 @@ class CGS():
         for row in grafo_prov:
             new_row = []
             for item in row:
-                if item == '0' or 'NoAction' in item:
+                if item == '0':
                     new_row.append(0)
                 else:
                     new_row.append(str(item))
@@ -93,7 +93,7 @@ class CGS():
         for row in matrix_prop_prov:
             new_row = []
             for item in row:
-                if item == '0' or 'NoAction' in item:
+                if item == '0':
                     new_row.append(0)
                 elif item == '1':
                     new_row.append(1)
