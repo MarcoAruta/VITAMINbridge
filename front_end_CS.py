@@ -920,7 +920,7 @@ def D_action():
   Nact=st.selectbox('Number of Action',[str(i) for i in range(1, 25)])
   Alphabet=list(string.ascii_uppercase)
   st.write("     ")
-  List_name_action=['*','No Action']
+  List_name_action=['*','NoAction']
   for id_action in range(int(Nact)):
     tmp=st.text_input('Name of the action number '+str(id_action),Alphabet[id_action])
     List_name_action.append(tmp)
@@ -975,7 +975,7 @@ def D_cost():
      from_state = st.session_state.info_model[1][i]
      for j in range(0, len(st.session_state.info_model[6][i])):
         to_state = st.session_state.info_model[1][j]
-        if 'No Action' not in st.session_state.info_model[6][i][j]:
+        if 'NoAction' not in st.session_state.info_model[6][i][j]:
           res = (from_state, st.session_state.info_model[6][i][j], [])
           for k in range(0, len(st.session_state.info_model[4])):
              tmp=st.selectbox(f'Cost of joint action {st.session_state.info_model[6][i][j]} in {from_state} to state {to_state} for resource {st.session_state.info_model[4][k]}', range(0, 11))
@@ -1035,7 +1035,7 @@ def D_printgraph():
 
 def store(agents, states, atoms, labelling, costs, actions, transitions, path):
    with open(path, 'w') as file:
-      no_actions = '|'.join(['No Action' for i in range(0, len(agents))])
+      no_actions = '|'.join(['NoAction' for i in range(0, len(agents))])
       revised_transitions = ''
       for tr in transitions:
         for act in tr:
