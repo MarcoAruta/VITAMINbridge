@@ -1,11 +1,2 @@
-model_checker_interface/explicit/RBATL/__pycache__/RBATL.cpython-310.pyc
-xml_data/__pycache__/writting.cpython-310.pyc
-xml_data/__pycache__/writting.cpython-310.pyc
-xml_data/__pycache__/to_cgs.cpython-310.pyc
-xml_data/__pycache__/set_operation.cpython-310.pyc
-xml_data/__pycache__/initialisation.cpython-310.pyc
-xml_data/__pycache__/convertion.cpython-310.pyc
-__pycache__/front_end_CS.cpython-310.pyc
-__pycache__/back_end_CS.cpython-310.pyc
-.venv
-.vscode
+# Created by venv; see https://docs.python.org/3/library/venv.html
+*
