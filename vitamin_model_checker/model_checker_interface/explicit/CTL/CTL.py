@@ -1,256 +1,327 @@
-from vitamin_model_checker.models.CGS import *
 from binarytree import Node
 from vitamin_model_checker.logics.CTL import verifyCTL, do_parsingCTL
+from vitamin_model_checker.models.CGS.CGS import *
 
-# returns the states where the proposition holds
-def get_states_prop_holds(prop):
+# -------------------------------
+# FUNZIONI DI SUPPORTO E UTILITÀ
+# -------------------------------
+
+def get_states_prop_holds(cgs, prop):
+    """
+    Restituisce l'insieme degli stati in cui la proposizione prop è vera.
+    """
     states = set()
     prop_matrix = cgs.get_matrix_proposition()
-
     index = cgs.get_atom_index(prop)
     if index is None:
         return None
-    for state, source in enumerate(prop_matrix):
-        if source[int(index)] == 1:
+    for state, row in enumerate(prop_matrix):
+        if row[int(index)] == 1:
             states.add(state)
-            #states.add("s" + str(state))
     return states
 
-
-# set of states (ex. s1, s2) as input and returns a set of indices to identify them
-def convert_state_set(state_set):
+def convert_state_set(cgs, state_set):
+    """
+    Converte un insieme di nomi di stati (es. {"s1", "s2"}) nel corrispondente insieme di indici.
+    """
     states = set()
     for elem in state_set:
         position = cgs.get_index_by_state_name(elem)
         states.add(int(position))
     return states
 
-
-# converts a string into a set
 def string_to_set(string):
-    #print(f"string:{string}")
+    """
+    Converte una stringa rappresentante un insieme (es. "{s1, s2}") in un oggetto set.
+    """
     if string == 'set()':
         return set()
     set_list = string.strip("{}").split(", ")
     new_string = "{" + ", ".join(set_list) + "}"
     return eval(new_string)
 
-
-#  function that builds a formula tree, used by the model checker
-#This function builds a formula tree, creating nodes for operators and atomic propositions
-# Eg: Input: !AXa, Tree Root: NOT operator, Left Child: AXa
-def build_tree(tpl):
+def build_tree(cgs, tpl):
+    """
+    Costruisce ricorsivamente l'albero della formula (di tipo binary tree).
+    Se il nodo è un atomo, si sostituisce il nodo con la stringa dell'insieme degli stati
+    in cui l'atomo è vero.
+    """
     if isinstance(tpl, tuple):
         root = Node(tpl[0])
         if len(tpl) > 1:
-            left_child = build_tree(tpl[1])
+            left_child = build_tree(cgs, tpl[1])
             if left_child is None:
                 return None
             root.left = left_child
             if len(tpl) > 2:
-                right_child = build_tree(tpl[2])
+                right_child = build_tree(cgs, tpl[2])
                 if right_child is None:
                     return None
                 root.right = right_child
     else:
+        # Nodo atomico: costruisce il set degli stati dove la proposizione è vera.
         states = set()
-        states_proposition = get_states_prop_holds(str(tpl))
+        states_proposition = get_states_prop_holds(cgs, str(tpl))
         if states_proposition is None:
             return None
         else:
             for element in states_proposition:
-                states.add(cgs.get_state_name_by_index(element))
+                # converti sempre in Python-str
+                state_name = str(cgs.get_state_name_by_index(element))
+                states.add(state_name)
             root = Node(str(states))
     return root
 
+# ---------------------------------------------------------
+# FUNZIONI PER IL CALCOLO DELLE PRE-IMMAGINI (CTL)
+# ---------------------------------------------------------
 
-# It returns the states predecessors of those held in input
 def pre_image_exist(transitions, list_holds_p):
-    #print(f"input transitions: {transitions}")
-    #print(f"pre-image: here're the input states where prop holds {list_holds_p}")
+    """
+    Calcola la pre-immagine esistenziale:
+    Restituisce l'insieme degli stati s tali che esista una transizione (s,t)
+    con t appartenente a list_holds_p.
+    """
     pre_list = set()
     for state in list(list_holds_p):
-        predecessors = {s for s, t in transitions if t == state}
-        #print(f"pre-image predecessors: {predecessors}")
+        # Per ogni stato t in list_holds_p, si raccolgono tutti gli s tali che (s,t) è una transizione
+        predecessors = {s for (s, t) in transitions if t == state}
         pre_list.update(predecessors)
     return pre_list
 
-def pre_image_all(transitions, list_holds_p):
-    pre_list = set()
-    for state in list(list_holds_p):
-        predecessors = {s for s, t in transitions if t == state}
-        for predecessor in predecessors:
-            successor_states = {t for s, t in transitions if s == predecessor}
-            if successor_states.issubset(list_holds_p):
-                pre_list.add(predecessor)
-    return pre_list
+def pre_image_all(transitions, states_set, holds_p):
+    """
+    Calcola la pre-immagine universale (AX):
+    Restituisce gli stati in states_set per i quali, se lo stato ha dei successori,
+    tutti i successori appartengono a holds_p.
+    (Per deadlock, si assume che AX sia vera.)
+    """
+    pre_states = set()
+    for state in states_set:
+        # Raccolgo i successori di 'state'
+        successors = {t for (s, t) in transitions if s == state}
+        if not successors or successors.issubset(holds_p):
+            pre_states.add(state)
+    return pre_states
 
+def pre_release_A(cgs, holds_phi, holds_psi):
+    """
+    Calcola A(φ R ψ) attraverso il massimo fixpoint.
+    Restituisce l'insieme dei stati in cui vale A(φ R ψ),
+    cioè gli stati s tali che:
+      - s soddisfa ψ, e
+      - se s non soddisfa φ, allora ogni successore di s appartiene al fixpoint.
+    """
+    all_states = set(cgs.get_states())
+    # Inizialmente, il risultato (fixpoint) è dato dagli stati che soddisfano ψ.
+    result = holds_psi.copy()
+    transitions = cgs.get_edges()
+    while True:
+        new_result = set()
+        for s in all_states:
+            if s in holds_psi:
+                # Controllo: se s soddisfa φ oppure tutti i successori di s (se esistenti)
+                # sono già in result, allora s entra in new_result.
+                successors = {t for (s_, t) in transitions if s_ == s}
+                if (s in holds_phi) or (not successors) or (successors.issubset(result)):
+                    new_result.add(s)
+        if new_result == result:
+            break
+        result = new_result
+    return result
 
-#This function solves formula tree returning a result for model checking. It analyzes tree recursively, solving nodes depending on the associated operator.
-# Eg: Same build tree formula: !AXa -> this function starts to solve AXa node as first, and then applies NOT at the result.
-#To solve AXa node, it uses pre-image function to define the states set where a proposition is satisfied. The result will be assigned to AXa node.
-#At the end, the algorithm applies NOT operator at the result for AXa. To do so, it computes the complementary states set for those that satisfy AXa.
-# The final result is stored in NOT operator root.
-def solve_tree(node):
+# ------------------------------
+# FUNZIONE DI RISOLUZIONE DELL'ALBERO
+# ------------------------------
 
+def solve_tree(cgs, node):
+    """
+    Risolve ricorsivamente l'albero della formula in base all'operatore.
+    La soluzione viene memorizzata in node.value, che contiene la stringa
+    rappresentante l'insieme degli stati in cui la formula è vera.
+    """
+    # Risolvi i sottoalberi (ricorsione)
     if node.left is not None:
-        print(f"node left: {node.left}")
-        print(type(node.left))
-        solve_tree(node.left)
-
-
+        solve_tree(cgs, node.left)
     if node.right is not None:
-        print(f"node right: {node.right}")
-        solve_tree(node.right)
+        solve_tree(cgs, node.right)
 
-    if node.right is None:   # UNARY OPERATORS: not, globally, next, eventually
-        if verifyCTL('NOT', node.value):  # e.g. ¬φ
+    # OPERATORE UNARIO
+    if node.right is None:
+        if verifyCTL('NOT', node.value):  # ¬φ
             states = string_to_set(node.left.value)
             ris = set(cgs.get_states()) - states
             node.value = str(ris)
 
-        elif verifyCTL('EXIST', node.value) and verifyCTL('GLOBALLY', node.value):  # e.g. EGφ
+        elif verifyCTL('EXIST', node.value) and verifyCTL('NEXT', node.value):  # EX φ
             states = string_to_set(node.left.value)
-            #print(f"states labelled as node lef(states where prop holds): {states}")
-            p = set(cgs.get_states())
-            t = states
-            while p - t:  # p not in t
-                p = t
-                t = pre_image_exist(cgs.get_edges(), p) & states
-            node.value = str(p)
-
-        elif verifyCTL('FORALL', node.value) and verifyCTL('GLOBALLY', node.value):  # not(EF(not p)) e.g. AGφ
-            states = string_to_set(node.left.value)
-            compl_states = set(cgs.get_states()) - states
-            #print(f"states labelled as node lef(states where prop holds): {compl_states}")
-            p = set()
-            t = compl_states
-            while t - p:  # t not in p
-                p.update(t)
-                t = pre_image_all(cgs.get_edges(), p)
-            out = set(cgs.get_states()) - p
-            node.value = str(out)
-
-        elif verifyCTL('FORALL', node.value) and verifyCTL('NEXT', node.value):# e.g. EXφ
-            states = string_to_set(node.left.value)
-            negated_states = set(cgs.get_states()) - states
-            #print(f"states labelled as node lef(states where prop holds): {negated_states}")
-            ris = pre_image_all(cgs.get_edges(), negated_states)
-            complement = set(cgs.get_states()) - ris
-            print(f"compl: {complement}")
-            node.value = str(complement)
-
-        elif (verifyCTL('EXIST', node.value) and verifyCTL('NEXT', node.value)):
-            states = string_to_set(node.left.value)
-            #print(f"states labelled as node lef(states where prop holds): {states}")
             ris = pre_image_exist(cgs.get_edges(), states)
             node.value = str(ris)
 
-
-        elif verifyCTL('EXIST', node.value) and verifyCTL('EVENTUALLY', node.value):  # trueUϕ.
+        elif verifyCTL('FORALL', node.value) and verifyCTL('NEXT', node.value):  # AX φ
             states = string_to_set(node.left.value)
-            #print(f"states labelled as node lef(states where prop holds): {states}")
-            p = set()
-            t = states
-            while t - p:  # t not in p
-                p.update(t)
-                t = pre_image_exist(cgs.get_edges(), p)
-            node.value = str(p)
-
-        elif verifyCTL('FORALL', node.value) and verifyCTL('EVENTUALLY', node.value):  # not (EG(not p))
-            states = string_to_set(node.left.value)
-            compl_states = set(cgs.get_states()) - states
-            #print(f"states labelled as node lef(states where prop holds): {compl_states}")
-            p = set(cgs.get_states())
-            t = compl_states
-            while p - t:  # p not in t
-                p = t
-                t = pre_image_all(cgs.get_edges(),p) & compl_states
-            ris = set(cgs.get_states()) - p
+            ris = pre_image_all(cgs.get_edges(), cgs.get_states(), states)
             node.value = str(ris)
 
-    if node.left is not None and node.right is not None:  # BINARY OPERATORS: or, and, until, implies
-        if verifyCTL('OR', node.value): # e.g. φ || θ
+        elif verifyCTL('EXIST', node.value) and verifyCTL('EVENTUALLY', node.value):  # EF φ
+            # EF φ = least fixpoint: T = φ ∪ (EX φ) iterato
+            target = string_to_set(node.left.value)
+            T = target.copy()
+            while True:
+                new_T = T.union(pre_image_exist(cgs.get_edges(), T))
+                if new_T == T:
+                    break
+                T = new_T
+            node.value = str(T)
+
+        elif verifyCTL('FORALL', node.value) and verifyCTL('EVENTUALLY', node.value):  # AF φ
+            # AF φ = ¬EG(¬φ). Calcoliamo EF sul complemento e poi ne prendiamo il complemento
+            target = set(cgs.get_states()) - string_to_set(node.left.value)
+            T = target.copy()
+            while True:
+                new_T = T.union(pre_image_exist(cgs.get_edges(), T))
+                if new_T == T:
+                    break
+                T = new_T
+            # Complemento rispetto a tutto l'insieme degli stati
+            node.value = str(set(cgs.get_states()) - T)
+
+        elif verifyCTL('EXIST', node.value) and verifyCTL('GLOBALLY', node.value):  # EG φ
+            # EG φ = greatest fixpoint: T = φ ∩ EX T
+            target = string_to_set(node.left.value)
+            T = set(cgs.get_states())
+            while True:
+                new_T = target.intersection(pre_image_exist(cgs.get_edges(), T))
+                if new_T == T:
+                    break
+                T = new_T
+            node.value = str(T)
+
+        elif verifyCTL('FORALL', node.value) and verifyCTL('GLOBALLY', node.value):  # AG φ
+            # AG φ = ¬EF(¬φ)
+            target = set(cgs.get_states()) - string_to_set(node.left.value)
+            T = target.copy()
+            while True:
+                new_T = T.union(pre_image_exist(cgs.get_edges(), T))
+                if new_T == T:
+                    break
+                T = new_T
+            node.value = str(set(cgs.get_states()) - T)
+
+        # Operatore RELEASE (versione universale, AR)
+        elif verifyCTL('FORALL', node.value) and verifyCTL('RELEASE', node.value):  # A(φ R ψ)
+            # Supponiamo che l'albero binario: left -> φ, right -> ψ oppure viceversa
+            # A(φ R ψ) richiede: ψ ∧ (φ ∨ AX (φ R ψ))
+            # Utilizziamo la caratterizzazione tramite fixpoint:
+            holds_phi = string_to_set(node.left.value)
+            holds_psi = string_to_set(node.right.value)
+            ris = pre_release_A(cgs, holds_phi, holds_psi)
+            node.value = str(ris)
+
+    # OPERATORE BINARIO
+    if node.left is not None and node.right is not None:
+        if verifyCTL('OR', node.value):  # φ ∨ θ
             states1 = string_to_set(node.left.value)
             states2 = string_to_set(node.right.value)
             ris = states1.union(states2)
             node.value = str(ris)
 
-
-        elif verifyCTL('EXIST', node.value) and verifyCTL('UNTIL', node.value):  # e.g. AφUθ
-            states1 = string_to_set(node.left.value)
-            #print(f"states labelled as node left(states where prop holds): {states1}")
-            states2 = string_to_set(node.right.value)
-            #print(f"states labelled as node right(states where prop holds): {states2}")
-            p = set()
-            t = states2
-            while t - p:  # t not in p
-                p.update(t)
-                t = pre_image_exist(cgs.get_edges(), p) & states1
-            node.value = str(p)
-
-        elif verifyCTL('AND', node.value):  # e.g. φ && θ
+        elif verifyCTL('AND', node.value):  # φ ∧ θ
             states1 = string_to_set(node.left.value)
             states2 = string_to_set(node.right.value)
             ris = states1.intersection(states2)
             node.value = str(ris)
 
-        elif verifyCTL('IMPLIES', node.value):  # e.g. φ -> θ
-            # p -> q ≡ ¬p ∨ q
+        elif verifyCTL('IMPLIES', node.value):  # φ -> θ  ≡ ¬φ ∨ θ
             states1 = string_to_set(node.left.value)
             states2 = string_to_set(node.right.value)
-            not_states1 = set(cgs.get_states()).difference(states1)
+            not_states1 = set(cgs.get_states()) - states1
             ris = not_states1.union(states2)
             node.value = str(ris)
 
-# returns whether the result of model checking is true or false in the initial state
-def verify_initial_state(initial_state, string):
-    if initial_state in string:
-        return True
-    return False
+        elif verifyCTL('EXIST', node.value) and verifyCTL('UNTIL', node.value):  # E(φ U ψ)
+            # Calcolo del least fixpoint: T = ψ ∪ (φ ∩ EX T)
+            states_phi = string_to_set(node.left.value)
+            states_psi = string_to_set(node.right.value)
+            T = states_psi.copy()
+            while True:
+                new_T = T.union(states_phi.intersection(pre_image_exist(cgs.get_edges(), T)))
+                if new_T == T:
+                    break
+                T = new_T
+            node.value = str(T)
 
+        elif verifyCTL('FORALL', node.value) and verifyCTL('UNTIL', node.value):  # A(φ U ψ)
+            # A(φ U ψ) = ¬E(¬ψ U (¬φ ∧ ¬ψ)) (formula duale)
+            # Possiamo calcolarla tramite una trasformazione:
+            not_states_phi = set(cgs.get_states()) - string_to_set(node.left.value)
+            not_states_psi = set(cgs.get_states()) - string_to_set(node.right.value)
+            # Calcoliamo E(not ψ U (not φ ∧ not ψ))
+            T = not_states_psi.copy()
+            while True:
+                new_T = T.union((not_states_phi.intersection(not_states_psi)).intersection(pre_image_exist(cgs.get_edges(), T)))
+                if new_T == T:
+                    break
+                T = new_T
+            # Complemento: A(φ U ψ) = ¬T
+            node.value = str(set(cgs.get_states()) - T)
 
-# does the parsing of the model, the formula, builds a tree and then it returns the result of model checking
-# function called by front_end_CS
-def model_checking(formula, filename):
-    global cgs
+        # Per l'operatore RELEASE esistenziale (se necessario) si potrebbe definire in maniera duale,
+        # ad esempio: E(φ R ψ) = ¬A(¬φ U ¬ψ)
+        elif verifyCTL('EXIST', node.value) and verifyCTL('RELEASE', node.value):  # E(φ R ψ)
+            not_states_phi = set(cgs.get_states()) - string_to_set(node.left.value)
+            not_states_psi = set(cgs.get_states()) - string_to_set(node.right.value)
+            # Calcoliamo A(not φ U not ψ)
+            T = not_states_psi.copy()
+            while True:
+                new_T = T.union(not_states_phi.intersection(not_states_psi).intersection(pre_image_all(cgs.get_edges(), cgs.get_states(), T)))
+                if new_T == T:
+                    break
+                T = new_T
+            node.value = str(set(cgs.get_states()) - T)
 
+# -------------------------------------
+# FUNZIONE DI MODEL CHECKING (CTL)
+# -------------------------------------
+
+def verify_initial_state(initial_state, result_str):
+    """
+    Verifica se lo stato iniziale è incluso nell'insieme risultante (espresso come stringa).
+    """
+    return str(initial_state) in result_str
+
+def model_checking(cgs, formula, filename):
+    """
+    Esegue il model checking per CTL:
+      1. Legge il modello dal file
+      2. Parsea la formula
+      3. Costruisce l'albero della formula
+      4. Risolve l'albero
+      5. Restituisce il risultato (insieme degli stati dove la formula è vera) e l'esito sullo stato iniziale
+    """
     if not formula.strip():
-        result = {'res': 'Error: formula not entered', 'initial_state': ''}
+        result = {'res': 'Error: formula non inserita', 'initial_state': ''}
         return result
 
-    # model parsing
-    cgs = CGS()
+    # Parsing del modello
     cgs.read_file(filename)
-
-    # formula parsing
-    print(f"formula to parse: {formula}")
+    # Parsing della formula CTL
     res_parsing = do_parsingCTL(formula)
     if res_parsing is None:
-        result = {'res': "Syntax Error", 'initial_state': ''}
+        result = {'res': "Errore di sintassi nella formula", 'initial_state': ''}
         return result
-    root = build_tree(res_parsing)
+    root = build_tree(cgs, res_parsing)
     if root is None:
-        result = {'res': "Syntax Error: the atom does not exist", 'initial_state': ''}
+        result = {'res': "Errore di sintassi: l'atomo non esiste", 'initial_state': ''}
         return result
-    print(f"root is: {root}")
-    # model checking
-    solve_tree(root)
 
-    # solution
+    # Esecuzione del model checking
+    solve_tree(cgs, root)
+
+    # Risultato: verifico se lo stato iniziale soddisfa la formula
     initial_state = cgs.get_initial_state()
     bool_res = verify_initial_state(initial_state, root.value)
-    result = {'res': 'Result: ' + str(root.value), 'initial_state': 'Initial state '+ str(initial_state) + ": " + str(bool_res)}
+    result = {'res': 'Result: ' + str(root.value),
+              'initial_state': 'Initial state ' + str(initial_state) + ": " + str(bool_res)}
     return result
-
-# def process_modelCheckingCTL(filename, formula):
-#     cgs = CGS()
-#     cgs.read_file(filename)
-#     result = model_checking(formula, filename)
-#     print(result)
-#     return result
-
-
-
-
 

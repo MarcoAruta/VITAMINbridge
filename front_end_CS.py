@@ -1,6 +1,7 @@
 import string
 import time
-
+from vitamin_model_checker.models.CGS.CGS import *
+from vitamin_model_checker.model_checker_interface.explicit.LTL.strategies import generate_single_strategy_random
 import streamlit as st
 
 # from logics.ATL import ATL
@@ -11,10 +12,11 @@ import streamlit as st
 # from logics.NatATL import *
 from back_end_CS import *
 import os
-from vitamin_model_checker.models import *
 from pathlib import *
-# from vitamin_model_checker.xml_data import *
-# from vitamin_model_checker.xml_data.writting import writting
+
+
+#from vitamin_model_checker.xml_data import *
+#from vitamin_model_checker.xml_data.writting import writting
 
 
 def display_case(nlp_steps):
@@ -331,7 +333,7 @@ def display_case(nlp_steps):
     list(input_ast_format.keys()),list(np.random.choice(list(input_ast_format.keys()),2)))
 
 
-    dfa = VisualDFA(
+    dfa = DFA(
     states={"q0", "q1", "q2", "q3", "q4"},
     input_symbols={"0", "1"},
     transitions=input_ast_format,
@@ -469,11 +471,8 @@ def upload_file_handler():
         # st.write(bytes_data)
         # st.write(data[1])
         # st.write(type(data))
-        s = ''
         for line in data:
             f.write(str(line) + '\n')
-            s += str(line) + '\n'
-        filename = 'data/' + str(uploaded_file.name)
   else:
     filename=file_select()
     st.info('You selected {}'.format(filename))
@@ -569,7 +568,6 @@ def upload_xml_file_handler():
         # st.write(type(data))
         for line in data:
             f.write(str(line) + '\n')
-        filename = 'xml_data/' + str(uploaded_file.name)
   else:
     filename=file_select()
     st.info('You selected {}'.format(filename))
@@ -681,7 +679,7 @@ def read_markdown_file(markdown_file):
 
 def display_MS(page):
   if page == 0:
-    intro_markdown = read_markdown_file("./README.md") 
+    intro_markdown = read_markdown_file("./README.md")
     st.markdown(intro_markdown, unsafe_allow_html=True)
   elif page == 3:
     if st.session_state.cmpt_model<=0:
@@ -726,7 +724,7 @@ def display_MS(page):
         del ATL
         st.write(result['res'])
         st.write(result['initial_state'])
-      
+
       #D_parser()
 
     st.markdown("---")
@@ -734,10 +732,10 @@ def display_MS(page):
     st.header("Model design for User")
     st.write(f"    ")
     st.markdown("---")
-  elif page==4:
+  elif page==4: #expert user
     filename = upload_file_handler()
     st.markdown('Logic Selection ')
-    Logic=st.selectbox('Select your logic',['ATL','ATLF','CTL','LTL','SL','CapATL', 'OL', 'OATL', 'NatATL', 'RBATL', 'RABATL'])
+    Logic = st.selectbox('Select your logic',['ATL', 'ATLF', 'CTL', 'CTLF', 'LTL', 'SL', 'CapATL', 'OL', 'OATL', 'Memoryless NatATL','Recall NatATL', 'Optimized Memoryless NatATL', 'Optimized Recall NatATL', 'Memoryless NatATL[F]','Recall NatATL[F]', 'Space-Efficient NatSL', 'Time-Efficient NatSL', 'RBATL', 'RABATL'])
     st.write(f"    ")
     st.write(f"    ")
     formula=st.text_input('Write your formula',' ')
@@ -749,7 +747,7 @@ def display_MS(page):
     st.write(str(list_pars))
     st.write(str(list_type))"""
 
-    # read_input.read_file(filename) 
+    # read_input.read_file(filename)
     # res_parsing = do_parsing(formula, read_input.get_number_of_agents())
 
     # if formula == '':
@@ -804,15 +802,67 @@ def display_MS(page):
         del RABATL
         st.write(result['res'])
         st.write(result['initial_state'])
-      elif Logic == 'NatATL':
-        from vitamin_model_checker.model_checker_interface.explicit.NatATL import NatATL
-        result = NatATL.model_checking(formula, filename)
+      elif Logic == 'Memoryless NatATL':
+        from vitamin_model_checker.model_checker_interface.explicit.NatATL.Memoryless import NatATL
+        result = NatATL.model_checking(filename) #here the filename will be a json file
         del NatATL
+        st.write(result)
+      elif Logic == 'Recall NatATL':
+        from vitamin_model_checker.model_checker_interface.explicit.NatATL.Recall import natATLwithRecall
+        result = natATLwithRecall.model_checking(formula, filename)
+        del natATLwithRecall
+        st.write(result)
+      elif Logic == 'Optimized Memoryless NatATL':
+        from vitamin_model_checker.model_checker_interface.explicit.NatATL.Memoryless.PrefilterATL import \
+          natATLmodelChecking
+        result = natATLmodelChecking.preprocess_and_verify(filename, formula)
+        del natATLmodelChecking
+        st.write(result)
+      elif Logic == 'Optimized Recall NatATL':
+        from vitamin_model_checker.model_checker_interface.explicit.NatATL.Recall.PrefilterATL import natATLwithRecall
+        result = natATLwithRecall.preprocess_and_verify(filename, formula)
+        del natATLwithRecall
+        st.write(result)
+      elif Logic == 'Space-Efficient NatSL': #Alternated
+        from vitamin_model_checker.model_checker_interface.explicit.NatSL.Alternated import natSL
+        result = natSL.model_checking(formula, filename)
+        del natSL
+        st.write(result)
+      elif Logic == 'Time-Efficient NatSL': #Sequential
+        from vitamin_model_checker.model_checker_interface.explicit.NatSL.Sequential import natSL
+        result = natSL.model_checking(formula, filename)
+        del natSL
         st.write(result)
       elif Logic == 'CTL':
         from vitamin_model_checker.model_checker_interface.explicit.CTL import CTL
         result = CTL.model_checking(formula, filename)
         del CTL
+      elif Logic == 'CTLF':
+        from vitamin_model_checker.model_checker_interface.explicit.CTLF import CTLF
+        fks = CTLF.parse_model(filename)
+        ast = CTLF.parse_formula(formula)
+        res = CTLF.solve_fctl(ast, fks)
+
+        print("Action→degree mapping:")
+        for s in fks.states:
+          for t, deg in fks.R[s].items():
+            print(f"  {s} → {t}: {deg:.1f}")
+
+        print("\nGrado di soddisfazione per ogni stato:")
+        for s in fks.states:
+          print(f"  {s}: {res[s]:.1f}")
+        print(f"\nInitial state '{fks.initial}' → {res[fks.initial]:.1f}")
+        del CTLF
+        st.write(res)
+      elif Logic == 'Memoryless NatATL[F]':
+        from vitamin_model_checker.model_checker_interface.explicit.NatATLF.Memoryless import NatATLF
+        result = NatATLF.model_checking(formula, filename)
+        del NatATLF
+        st.write(result)
+      elif Logic == 'Recall NatATL[F]':
+        from vitamin_model_checker.model_checker_interface.explicit.NatATLF.Recall import natATLwithRecall
+        result = natATLwithRecall.model_checking(formula, filename)
+        del natATLwithRecall
         st.write(result)
       elapsed_time = time.time() - start_time
       st.write("Execution time:", format_time(elapsed_time))
@@ -825,25 +875,151 @@ def display_MS(page):
       st.session_state.cmpt_model=7
       #st.experimental_rerun()
   else:
-      xml = upload_xml_file_handler()
-      
-      def mapAttackGraphToCGS(xml):
-        writting(xml, 'xml_data/cgs' './xml_data/cond.txt', ['Cond 4'])
-        
-        return cgs, '<Jn>G!goal'
-        
-      
-      # Clement part to produce xml
-      #      xml --> cgs
-      #          --> formula
-      cgs,formula = mapAttackGraphToCGS(xml)
-      if st.button('Next : To Model Checking'):
-        from vitamin_model_checker.model_checker_interface.explicit.ATL import ATL
-        result = ATL.model_checking(formula, cgs)
-        del ATL
-        st.write(result['res'])
-        st.write(result['initial_state'])
+    # --- INTERFACCIA UTENTE ---
 
+    # Caricamento del file di modello
+    filename = upload_file_handler()
+
+    st.markdown('**Logic Selection**')
+    Logic = st.selectbox('Select your logic', ['LTL'])
+    st.write("    ")
+    st.write("    ")
+
+    # Inserimento della formula
+    formula = st.text_input('Write your formula for your agents', ' ')
+    st.write("     ")
+
+    # Sezione commentata: parsing della formula
+    """
+    Verif, list_pars, list_type = parser(formula)
+    st.write(str(Verif))
+    st.write(str(list_pars))
+    st.write(str(list_type))
+    """
+
+    st.markdown('**Game Selection**')
+    k = st.selectbox('Insert Complexity upper bound of your game', ['1', '2', '3', '4', '5', '6', '7', '8'])
+    k = int(k)  # Converte in intero per evitare errori
+    st.write("    ")
+    st.write("    ")
+
+    # Selezione del concetto di soluzione
+    solution_concept = st.selectbox('Select your Solution Concept', ['Is Not Nash', 'Sure Win', 'Exists Nash'])
+    st.write("    ")
+    st.write("    ")
+
+    # --- ESTRAZIONE DATI DAL MODELLO ---
+    cgs = CGS()
+    cgs.read_file(filename)
+    graph = cgs.get_graph()
+    num_agents = cgs.get_number_of_agents()  # Restituisce il numero totale di agenti
+    selected_agents = []
+    for i in range(1, num_agents + 1):
+      scelta = st.selectbox(f"Do you want agent-{i} inside your game's strategy coalition?", ["No", "Yes"],
+                            key=f"agent_choice_{i}")
+      if scelta == "Yes":
+        selected_agents.append(i)
+    st.write("Agenti selezionati:", selected_agents)
+
+    # Recupero delle azioni valide per ciascun agente selezionato
+    agent_actions = cgs.get_actions(selected_agents)  # Dizionario tipo {'agent1': [...], 'agent2': [...], ...}
+
+    atomic_propositions = cgs.get_atomic_prop()  # Recupera le atomic propositions
+    st.write("List of valid atomic propositions:", atomic_propositions)
+    st.write("List of valid agents' actions:", agent_actions)
+
+    # Inizializzo natural_strategies di default
+    natural_strategies = None
+
+    # --- SOLUTION CONCEPTS SELECTION ---
+    if solution_concept == 'Is Not Nash':
+      st.info(
+        "Per ciascun agente selezionato, inserisci le coppie condizione-azione, una per riga, seguendo il formato: condizione,azione")
+      st.markdown("**Esempio:** x_>_5, move_forward")
+
+      # Form per l'inserimento manuale
+      natural_strategies_dict = {}  # Dizionario per raccogliere le strategie per ogni agente
+      with st.form(key="strategies_form"):
+        for agent in selected_agents:
+          st.markdown(f"#### Agente {agent}")
+          st.markdown(
+            "Inserisci le coppie condizione,azione per l'agente **{}**. Ad es., per indicare che se la condizione x > 5 è vera, l'agente deve eseguire move_forward, inserisci:".format(
+              agent))
+          st.code("x > 5, move_forward", language='python')
+          input_str = st.text_area(f"Inserisci le coppie condizione,azione per l'agente {agent}:", key=f"nat_{agent}")
+          natural_strategies_dict[agent] = input_str
+        manual_submitted = st.form_submit_button(label="Salva Strategie Naturali Manuali")
+
+      if manual_submitted:
+        parsed_strategies = {}
+        error_found = False
+        for agent, input_str in natural_strategies_dict.items():
+          pairs = []
+          for line in input_str.split("\n"):
+            line = line.strip()
+            if line:
+              parts = line.split(",")
+              if len(parts) != 2:
+                st.error(f"Formato non valido per l'agente {agent}: '{line}'. Uso: condizione,azione")
+                error_found = True
+              else:
+                cond = parts[0].strip()
+                act = parts[1].strip()
+                valid, err_msg = validate_condition(cond, k, atomic_propositions)
+                if not valid:
+                  st.error(f"Errore per l'agente {agent} nella condizione '{cond}': {err_msg}")
+                  error_found = True
+                else:
+                  available_actions = agent_actions.get(f"agent{agent}", [])
+                  if act not in available_actions:
+                    st.error(f"L'azione '{act}' per l'agente {agent} non è valida. Azioni valide: {available_actions}")
+                    error_found = True
+                  else:
+                    pairs.append((cond, act))
+          parsed_strategies[agent] = {"condition_action_pairs": pairs}
+
+        if not error_found:
+          natural_strategies = [parsed_strategies[agent] for agent in sorted(parsed_strategies)]
+          st.success(f"Strategie naturali inserite correttamente: {natural_strategies}")
+          st.write(natural_strategies)
+          st.session_state['natural_strategies'] = natural_strategies
+
+      # Pulsante per generare la strategia naturale randomica direttamente (senza iterare sul generatore)
+      if st.button('Genera Strategia Naturale Randomica'):
+        natural_strategies = generate_single_strategy_random(selected_agents, k, agent_actions, atomic_propositions)
+        if natural_strategies is not None:
+          st.success("Strategia naturale generata randomicamente:")
+          st.write(natural_strategies)
+          st.session_state['natural_strategies'] = natural_strategies
+        else:
+          st.error("Non è stato possibile generare una strategia valida. Riprova con altri parametri.")
+
+    else:
+      natural_strategies = None
+      st.session_state['natural_strategies'] = natural_strategies
+
+    # --- CHIAMATA AL MODEL CHECKING ---
+    if st.button('Next : To Model Checking'):
+      start_time = time.time()
+      natural_strategies = st.session_state.get('natural_strategies', None)
+      if Logic == 'LTL':
+        from vitamin_model_checker.model_checker_interface.explicit.LTL import LTL
+        if solution_concept == 'Is Not Nash':
+          print(f"Strategie naturali prima del model checking: {natural_strategies}")
+          result = LTL.model_checking_isNotNash(filename, cgs, formula, k, natural_strategies, selected_agents)
+        elif solution_concept == 'Sure Win':
+          result = LTL.model_checking_sureWin(filename, formula, k, selected_agents)
+        elif solution_concept == 'Exists Nash':
+          result = LTL.model_checking_sureWin(filename, formula, k, selected_agents)
+        del LTL
+        st.write(result)
+      elapsed_time = time.time() - start_time
+      st.write("Execution time:", elapsed_time)
+      if 'info_model' in st.session_state:
+        st.session_state.info_model.append([Logic, formula])
+      else:
+        st.session_state.info_model = [[Logic, formula]]
+      st.session_state.cmpt_model = 7
 
 def D_agent():
   st.write(f"    ")
@@ -920,7 +1096,7 @@ def D_action():
   Nact=st.selectbox('Number of Action',[str(i) for i in range(1, 25)])
   Alphabet=list(string.ascii_uppercase)
   st.write("     ")
-  List_name_action=['*','NoAction']
+  List_name_action=['*','No Action']
   for id_action in range(int(Nact)):
     tmp=st.text_input('Name of the action number '+str(id_action),Alphabet[id_action])
     List_name_action.append(tmp)
@@ -975,7 +1151,7 @@ def D_cost():
      from_state = st.session_state.info_model[1][i]
      for j in range(0, len(st.session_state.info_model[6][i])):
         to_state = st.session_state.info_model[1][j]
-        if 'NoAction' not in st.session_state.info_model[6][i][j]:
+        if 'No Action' not in st.session_state.info_model[6][i][j]:
           res = (from_state, st.session_state.info_model[6][i][j], [])
           for k in range(0, len(st.session_state.info_model[4])):
              tmp=st.selectbox(f'Cost of joint action {st.session_state.info_model[6][i][j]} in {from_state} to state {to_state} for resource {st.session_state.info_model[4][k]}', range(0, 11))
@@ -1025,9 +1201,9 @@ def D_printgraph():
   st.markdown('#### iii - Diagram: ')
   test=display_graph_MS(st.session_state.info_model[6],st.session_state.info_model[0][0],st.session_state.info_model[1])
   st.graphviz_chart(test)
-  
+
   store(st.session_state.info_model[0][0], st.session_state.info_model[1], st.session_state.info_model[2], st.session_state.info_model[3], st.session_state.info_model[7], st.session_state.info_model[5], st.session_state.info_model[6], 'data/tmp.txt')
-  
+
   if st.button('Next : To Logic'):
     (st.session_state.info_model).append(test)
     st.session_state.cmpt_model=9
@@ -1035,11 +1211,11 @@ def D_printgraph():
 
 def store(agents, states, atoms, labelling, costs, actions, transitions, path):
    with open(path, 'w') as file:
-      no_actions = '|'.join(['NoAction' for i in range(0, len(agents))])
+      no_actions = '|'.join(['No Action' for i in range(0, len(agents))])
       revised_transitions = ''
       for tr in transitions:
         for act in tr:
-           if 'NoAction' in act: #act == no_actions:
+           if act == no_actions:
               revised_transitions += '0 '
            else:
               revised_transitions += act.replace('|', '') + ' '
@@ -1102,21 +1278,9 @@ def D_logic():
   st.write(str(list_pars))
   st.write(str(list_type))
   if st.button('Next : To Model Checking'):
-    # (st.session_state.info_model).append([Logic,formula])
-    # st.session_state.cmpt_model=10
-    # st.experimental_rerun()
-    if Logic == 'RBATL':
-        from vitamin_model_checker.model_checker_interface.explicit.RBATL import RBATL
-        result = RBATL.model_checking(formula, 'data/tmp.txt')
-        del RBATL
-        st.write(result['res'])
-        st.write(result['initial_state'])
-    else:
-      from vitamin_model_checker.model_checker_interface.explicit.ATL import ATL
-      result = ATL.model_checking(formula, 'data/tmp.txt')
-      del ATL
-      st.write(result['res'])
-      st.write(result['initial_state'])
+    (st.session_state.info_model).append([Logic,formula])
+    st.session_state.cmpt_model=10
+    st.experimental_rerun()
 
 
 #def D_parser():
@@ -1164,5 +1328,23 @@ def D_strategy(act_input,id_state1):
 def format_time(seconds):
   milliseconds = int(seconds * 1000) % 1000
   return f"{int(seconds):02d}.{milliseconds:03d}"
+
+
+def validate_condition(cond, k, atomic_props):
+  tokens = cond.split()
+  # Calcola la complessità: numero di token + 1 se contiene "!"
+  complexity = len(tokens) + (1 if "!" in cond else 0)
+  if complexity > k:
+    return False, f"La complessità della condizione ({complexity}) supera il bound k={k}."
+  for token in tokens:
+    # Ignora gli operatori logici
+    if token.lower() in ["and", "or"]:
+      continue
+    # Se il token inizia con "!", controlla il simbolo dopo
+    token_core = token[1:] if token.startswith("!") else token
+    if token_core not in atomic_props:
+      return False, f"Il simbolo '{token_core}' non è una atomic proposition valida."
+  return True, ""
+
 
 

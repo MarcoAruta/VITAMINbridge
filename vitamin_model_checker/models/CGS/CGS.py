@@ -1,14 +1,19 @@
 import numpy as np
 
 class CGS():
-    def init(self):
+    def __init__(self):
+        # sezioni standard
         self.graph = []
         self.states = []
         self.atomic_propositions = []
         self.matrix_prop = []
         self.initial_state = ''
-        self.number_of_agents = ''
+        self.number_of_agents = 0
         self.actions = []
+        # nuove sezioni
+        self.resource = 0
+        self.actions_costs = []
+
 
     def read_file(self, filename):
         with open(filename, 'r') as f:
@@ -20,6 +25,9 @@ class CGS():
         self.matrix_prop = []
         self.initial_state = ''
         self.number_of_agents = ''
+        self.actions = []
+        self.resource = 0
+        self.actions_costs = []
 
         current_section = None
         transition_content = ''
@@ -29,107 +37,113 @@ class CGS():
         labelling_content = ''
         rows_graph = []
         rows_prop = []
-        
 
-        for line in lines:
+        for raw in lines:
+            line = raw.rstrip('\n')
+            # header sezioni
             line = line.strip()
-            #Section "header"
+            # Section "header"
             if line == 'Transition':
                 current_section = 'Transition'
+                continue
             elif line == 'Unkown_Transition_by':
                 current_section = 'Unknown_Transition_by'
+                continue
             elif line == 'Name_State':
                 current_section = 'Name_State'
+                continue
             elif line == 'Initial_State':
                 current_section = 'Initial_State'
+                continue
             elif line == 'Atomic_propositions':
                 current_section = 'Atomic_propositions'
+                continue
             elif line == 'Labelling':
                 current_section = 'Labelling'
+                continue
             elif line == 'Number_of_agents':
                 current_section = 'Number_of_agents'
+                continue
+            elif line == 'Resource':
+                current_section = 'Resource'
+                continue
+            elif line == 'Actions_Costs_from_Transition':
+                current_section = 'Actions_Costs_from_Transition'
+                continue
 
             #If not header, then read contents based on what section we are in
-            
-            elif current_section == 'Transition':
+
+            if current_section == 'Transition':
                 transition_content += line + '\n'
-                values = line.strip().split()
-                rows_graph.append(values)
+                vals = line.split()
+                rows_graph.append(vals)
             elif current_section == 'Unknown_Transition_by':
                 unknown_transition_content += line + '\n'
             elif current_section == 'Name_State':
                 name_state_content += line + '\n'
-                values = line.strip().split()
-                self.states = np.array(values)
+                self.states = np.array(line.split())
             elif current_section == 'Initial_State':
                 self.initial_state = line
             elif current_section == 'Atomic_propositions':
                 atomic_propositions_content += line + '\n'
-                values = line.strip().split()
-                self.atomic_propositions = np.array(values)
+                self.atomic_propositions = np.array(line.split())
             elif current_section == 'Labelling':
                 labelling_content += line + '\n'
-                values = line.strip().split()
-                rows_prop.append(values)
+                rows_prop.append(line.split())
             elif current_section == 'Number_of_agents':
-                self.number_of_agents = line
-            
-        actions =[]
-        a = 0
-        grafo_prov = np.array(rows_graph)
-        for row in grafo_prov:
-            new_row = []
-            for item in row:
-                if item == '0':
-                    new_row.append(0)
-                else:
-                    new_row.append(str(item))
-                    a = item.split(",")
-                    for elem in a :
-                        actions.append(elem)
-            self.graph.append(new_row)   
+                self.number_of_agents = int(line)
+            elif current_section == 'Resource':
+                self.resource = int(line)
+            elif current_section == 'Actions_Costs_from_Transition':
+                # es. "00 23,21 13,11 03"
+                self.actions_costs.append(line.split())
 
-        matrix_prop_prov = np.array(rows_prop)
-        for row in matrix_prop_prov:
+        # costruisco self.graph da rows_graph
+        for row in rows_graph:
             new_row = []
-            for item in row:
-                if item == '0':
+            for cell in row:
+                if cell == '0':
                     new_row.append(0)
-                elif item == '1':
-                    new_row.append(1)
                 else:
-                    new_row.append(str(item))
+                    new_row.append(cell)
+                # (estrazione self.actions se la usi da get_actions preesistente)
+            self.graph.append(new_row)
+
+        # costruisco matrix_prop da rows_prop
+        for row in rows_prop:
+            new_row = []
+            for cell in row:
+                if cell in ('0','1'):
+                    new_row.append(int(cell))
+                else:
+                    new_row.append(cell)
             self.matrix_prop.append(new_row)
 
-    def read_from_model_object(self, model):
-        self.graph = model.transition_matrix
-        self.states = np.array(model.state_names)
-        self.atomic_propositions = np.array(model.propositions)
-        self.matrix_prop = model.labelling_function
-        self.initial_state = model.initial_state
-        self.number_of_agents = model.number_of_agents
-        self.actions = model.actions
-        
+    # --- GETTERS STANDARD ---
+    def get_resource(self):
+        """Restituisce il valore intero di Resource."""
+        return self.resource
+
+    def get_number_of_agents(self):
+        return int(self.number_of_agents)
+
     def get_graph(self):
         return self.graph
 
     def get_states(self):
         return self.states
 
-    def get_atomic_prop(self):
-        return self.atomic_propositions
-
-
     def get_matrix_proposition(self):
         return self.matrix_prop
 
+    def get_number_of_states(self):
+        return len(self.states)
+
+    def get_atomic_prop(self):
+        return self.atomic_propositions
 
     def get_initial_state(self):
         return self.initial_state
-
-
-    def get_number_of_agents(self):
-        return int(self.number_of_agents)
 
     def get_actions(self):
         return self.actions
@@ -159,8 +173,8 @@ class CGS():
 
         return actions_per_agent
 
-    #return the number of actions extracted in get_actions()
-    def get_number_of_actions (self):
+    # return the number of actions extracted in get_actions()
+    def get_number_of_actions(self):
 
         n = self.get_actions()
         return len(n)
@@ -186,11 +200,11 @@ class CGS():
                 else:
                     output_file.write(line + '\n')
 
-    #returns the edges of a graph
+    # returns the edges of a graph
     def get_edges(self):
         graph = self.get_graph()
         states = self.get_states()
-        #duplicate edges (double transactions from "a" to "b") are ignored due to model checking
+        # duplicate edges (double transactions from "a" to "b") are ignored due to model checking
         edges = []
         for i, row in enumerate(graph):
             for j, element in enumerate(row):
@@ -204,7 +218,7 @@ class CGS():
         with open(filename, 'r') as file:
             data = file.read()
         return data
-        
+
         # returns the index of the given atom, in the array of atomic propositions
     def get_atom_index(self, element):
         array = self.get_atomic_prop()
@@ -215,19 +229,16 @@ class CGS():
             print("Element not found in array.")
             return None
 
-
     # returns the index, given a state name
     def get_index_by_state_name(self, state):
         state_list = self.get_states()
         index = np.where(state_list == state)[0][0]
         return index
 
-
     # returns the state, given an index
     def get_state_name_by_index(self, index):
         states = self.get_states()
         return states[index]
-
 
     # converts action_string into a list
     def build_list(self, action_string):
@@ -239,12 +250,10 @@ class CGS():
         action_list = action_string.split(',')
         return action_list
 
-
     # returns a set of agents given a coalition (e.g. 1,2,3)
     def get_agents_from_coalition(self, coalition):
         agents = coalition.split(",")
         return set(agents)
-
 
     # sort and remove 0 from agents
     def format_agents(self, agents):
@@ -253,7 +262,6 @@ class CGS():
             agents.remove(0)
         agents = {int(x) - 1 for x in agents}
         return agents
-
 
     # returns coalition's actions
     def get_coalition_action(self, actions, agents):
@@ -274,7 +282,7 @@ class CGS():
                 for _, letter in enumerate(x):
                     if count == div:
                         if j in agents:
-                            result += letter if not letter_backup else letter_backup+letter
+                            result += letter if not letter_backup else letter_backup + letter
                         else:
                             result += '-'
                         j += 1
@@ -286,7 +294,6 @@ class CGS():
 
                 coalition_moves.add(result)
         return coalition_moves
-
 
     def get_base_action(self, action, agents):
         return self.get_coalition_action(set([action]), agents).pop()
@@ -306,7 +313,7 @@ class CGS():
             for i, letter in enumerate(x):
                 if count == div:
                     if j not in agents:
-                        result += letter if not letter_backup else letter_backup+letter
+                        result += letter if not letter_backup else letter_backup + letter
                     else:
                         result += '-'
                     j += 1
@@ -318,7 +325,66 @@ class CGS():
             other_moves.add(result)
         return other_moves
 
-    #added NatATL functions below
+    # added NatATL functions below
+
+    def update_cgs_file(self, input_file, modified_file, tree, tree_states, unwinded_CGS):
+        def read_input_file(file_path):
+            with open(file_path, 'r') as file:
+                lines = file.readlines()
+            return lines
+
+        def write_output_file(file_path, lines):
+            with open(file_path, 'w') as file:
+                file.writelines(lines)
+
+        def update_transitions(lines, new_transitions):
+            transition_start = lines.index("Transition\n") + 1
+            transition_end = lines.index("Unkown_Transition_by\n")
+            updated_lines = lines[:transition_start] + new_transitions + lines[transition_end:]
+            return updated_lines
+
+        def update_name_state(lines, states):
+            name_state_start = lines.index("Name_State\n") + 1
+            initial_state_index = lines.index("Initial_State\n")
+            states_line = " ".join(states) + "\n"
+            updated_lines = lines[:name_state_start] + [states_line] + lines[initial_state_index:]
+            return updated_lines
+
+        def update_labelling(lines, labelling):
+            labelling_start = lines.index("Labelling\n") + 1
+            num_agents_index = lines.index("Number_of_agents\n")
+            updated_lines = lines[:labelling_start] + labelling + lines[num_agents_index:]
+            return updated_lines
+
+        # Lettura del file di input
+        lines = read_input_file(input_file)
+
+        # Formattazione delle transizioni come richiesto
+        new_transitions = []
+        for row in unwinded_CGS:
+            new_transitions.append(" ".join(map(str, row)) + "\n")
+
+        # Aggiornamento delle transizioni nel file
+        lines = update_transitions(lines, new_transitions)
+
+        # Aggiornamento della lista degli stati nel file
+        lines = update_name_state(lines, tree_states)
+
+        # Creazione delle label rows dall'albero
+        labelling = []
+
+        def traverse_and_collect_labels(node):
+            labelling.append(" ".join(map(str, node.label_row)) + "\n")
+            for child in node.children:
+                traverse_and_collect_labels(child)
+
+        traverse_and_collect_labels(tree)
+
+        # Aggiornamento delle label rows nel file
+        lines = update_labelling(lines, labelling)
+
+        # Scrittura del file di output aggiornato
+        write_output_file(modified_file, lines)
 
     def get_label(self, index):
         return f's{index}'
@@ -329,12 +395,12 @@ class CGS():
             label_row = [self.get_label(i) if isinstance(elem, str) and elem != '*' else None for elem in row]
             label_matrix.append(label_row)
         return label_matrix
-    
+
     # Validate transition matrix
     # Use Example
-    #matrix = [['III', 0, 0, 0], [0, 'IIZ', 'ADZ,BDZ', 'ACZ,BCI'], ['ACZ,BDZ', 'ICZ', 'III', 'ADZ,BCZ'], [0, 'CIZ', 0, 'III']]
-    #n = 3
-    #parser(matrix, n)
+    # matrix = [['III', 0, 0, 0], [0, 'IIZ', 'ADZ,BDZ', 'ACZ,BCI'], ['ACZ,BDZ', 'ICZ', 'III', 'ADZ,BCZ'], [0, 'CIZ', 0, 'III']]
+    # n = 3
+    # parser(matrix, n)
     def matrixParser(self, n):
         for row in self.graph:
             if all(elem == 0 for elem in row):
@@ -348,7 +414,7 @@ class CGS():
 
                 strings = str(elem).split(',')
                 for s in strings:
-                    #if len(s) != n:
+                    # if len(s) != n:
                     #    raise ValueError(f"string length {s} for element {elem} is not equal to {n}")
 
                     for i in range(n):
@@ -357,3 +423,71 @@ class CGS():
 
             if any(count == 0 for count in char_I_count):
                 raise ValueError("Idle error: There has to be at least one 'I' for each row")
+    def get_action_cost(self, action_letter, agent_index):
+        """
+        Restituisce il costo dell'azione singola `action_letter` per l'agente `agent_index` (1-based).
+        Cerca nella self.graph la cella i,j in cui, per qualche tupla di azioni come "AC,BD",
+        la lettera in posizione agent_index-1 sia proprio action_letter, e poi legge lo stesso
+        entry in self.actions_costs per recuperare il carattere numerico corrispondente.
+        """
+        if agent_index < 1 or agent_index > self.number_of_agents:
+            raise IndexError("agent_index deve essere tra 1 e Number_of_agents")
+
+        for i, row in enumerate(self.graph):
+            for j, cell in enumerate(row):
+                if cell != 0 and cell != '*':
+                    # cell può contenere più joint‐action es. "AC,BD"
+                    for joint in cell.split(','):
+                        # se la lettera alla posizione dell'agente è quella cercata...
+                        if len(joint) >= agent_index and joint[agent_index-1] == action_letter:
+                            entry = self.actions_costs[i][j]  # es. "23"
+                            return int(entry[agent_index-1])
+
+        raise ValueError(f"Azione letterale '{action_letter}' non trovata per agente {agent_index}")
+
+    def validate_strategy(self, s_A):
+        """
+        Controlla per ogni agente i-esimo in s_A che
+        la somma dei costi delle azioni nella lista
+        'condition_action_pairs' non superi self.resource.
+
+        s_A: list of dict, length = number_of_agents,
+             each dict has key 'condition_action_pairs'
+             with a list of tuples (condition, action_letter).
+        Ritorna:
+          True se TUTTI gli agenti rispettano il budget,
+          False altrimenti.
+        """
+        # itero su ciascun agente
+        for idx, agent_strat in enumerate(s_A):
+            agent_index = idx + 1
+            total_cost = 0
+
+            for cond, action_letter in agent_strat.get('condition_action_pairs', []):
+                # sommo il costo di ogni singola azione
+                cost = self.get_action_cost(action_letter, agent_index)
+                total_cost += cost
+
+            if total_cost > self.resource:
+                # fallisce il vincolo per questo agente
+                return False
+
+        # tutti gli agenti stanno entro budget
+            print(f"{total_cost} costo totale azioni agente agent:{agent_index}")
+        return True
+
+# --- TEST RAPIDO ---
+if __name__ == "__main__":
+    cgs = CGS()
+    cgs.read_file('C:\\Users\\utente\\Desktop\\Lavoro\\KR\\ActionsResourceModel.txt')
+    print("Resource:", cgs.get_resource())
+    # es. costi per l'azione "AC" (prima apparizione) per entrambi gli agenti:
+    print("Costo di 'A' per agente 1:", cgs.get_action_cost("A", 1))
+    print("Costo di 'D' per agente 2:", cgs.get_action_cost("D", 2))
+    s_A = [
+        {'condition_action_pairs': [('a', 'A'), ('a', 'B')]},  # agente 1
+        {'condition_action_pairs': [('a', 'C'), ('a', 'D')]}  # agente 2
+    ]
+
+    valid = cgs.validate_strategy(s_A)
+    print("Strategia valida?", valid)

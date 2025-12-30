@@ -129,6 +129,15 @@ def main():
       st.session_state.mat_transi=[]
       st.session_state.costs=[]
       st.session_state.page=4
+    # Nuova sezione per Concurrent Games
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("Concurrent Games")
+    if st.sidebar.button('3 - SolutionConcepts'):
+        st.session_state.cmpt_model = 0
+        st.session_state.info_model = []
+        st.session_state.mat_transi = []
+        st.session_state.costs = []
+        st.session_state.page = 5
     # st.sidebar.markdown("---")
     # st.sidebar.markdown("Formal Verification of Attack Graphs")
     # if st.sidebar.button('3 - Expert User'):
