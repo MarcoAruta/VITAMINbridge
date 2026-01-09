@@ -1,0 +1,72 @@
+{
+  "input": {
+    "states": [
+      "s0",
+      "s1",
+      "s2"
+    ],
+    "agents": [
+      "convoy_leader"
+    ],
+    "actions": {
+      "convoy_leader": [
+        "advance",
+        "wait",
+        "idle"
+      ]
+    },
+    "transitions": [
+      {
+        "from": "s0",
+        "joint": [
+          "advance"
+        ],
+        "to": "s1"
+      },
+      {
+        "from": "s1",
+        "joint": [
+          "advance"
+        ],
+        "to": "s2"
+      },
+      {
+        "from": "s0",
+        "joint": [
+          "idle"
+        ],
+        "to": "s0"
+      },
+      {
+        "from": "s1",
+        "joint": [
+          "idle"
+        ],
+        "to": "s1"
+      },
+      {
+        "from": "s2",
+        "joint": [
+          "idle"
+        ],
+        "to": "s2"
+      }
+    ],
+    "initial_state": "s0",
+    "labeling": {
+      "s0": [
+        "start_position"
+      ],
+      "s1": [
+        "en_route"
+      ],
+      "s2": [
+        "destination_reached"
+      ]
+    },
+    "coalition": [
+      "convoy_leader"
+    ],
+    "formula_natatl": "<{convoy_leader}, 2> F destination_reached"
+  }
+}

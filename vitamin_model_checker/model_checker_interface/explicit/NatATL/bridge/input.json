@@ -1,0 +1,604 @@
+{
+  "input": {
+    "states": [
+      "s0",
+      "s1",
+      "s2",
+      "s3",
+      "s4"
+    ],
+    "agents": [
+      "uav_controller",
+      "wind"
+    ],
+    "actions": {
+      "uav_controller": [
+        "pick_up",
+        "fly",
+        "drop",
+        "idle"
+      ],
+      "wind": [
+        "calm",
+        "gust",
+        "idle"
+      ]
+    },
+    "transitions": [
+      {
+        "from": "s0",
+        "joint": [
+          "pick_up",
+          "calm"
+        ],
+        "to": "s1"
+      },
+      {
+        "from": "s0",
+        "joint": [
+          "pick_up",
+          "gust"
+        ],
+        "to": "s1"
+      },
+      {
+        "from": "s0",
+        "joint": [
+          "pick_up",
+          "idle"
+        ],
+        "to": "s1"
+      },
+      {
+        "from": "s0",
+        "joint": [
+          "fly",
+          "calm"
+        ],
+        "to": "s0"
+      },
+      {
+        "from": "s0",
+        "joint": [
+          "fly",
+          "gust"
+        ],
+        "to": "s0"
+      },
+      {
+        "from": "s0",
+        "joint": [
+          "fly",
+          "idle"
+        ],
+        "to": "s0"
+      },
+      {
+        "from": "s0",
+        "joint": [
+          "drop",
+          "calm"
+        ],
+        "to": "s0"
+      },
+      {
+        "from": "s0",
+        "joint": [
+          "drop",
+          "gust"
+        ],
+        "to": "s0"
+      },
+      {
+        "from": "s0",
+        "joint": [
+          "drop",
+          "idle"
+        ],
+        "to": "s0"
+      },
+      {
+        "from": "s0",
+        "joint": [
+          "idle",
+          "calm"
+        ],
+        "to": "s0"
+      },
+      {
+        "from": "s0",
+        "joint": [
+          "idle",
+          "gust"
+        ],
+        "to": "s0"
+      },
+      {
+        "from": "s0",
+        "joint": [
+          "idle",
+          "idle"
+        ],
+        "to": "s0"
+      },
+      {
+        "from": "s1",
+        "joint": [
+          "pick_up",
+          "calm"
+        ],
+        "to": "s1"
+      },
+      {
+        "from": "s1",
+        "joint": [
+          "pick_up",
+          "gust"
+        ],
+        "to": "s1"
+      },
+      {
+        "from": "s1",
+        "joint": [
+          "pick_up",
+          "idle"
+        ],
+        "to": "s1"
+      },
+      {
+        "from": "s1",
+        "joint": [
+          "fly",
+          "calm"
+        ],
+        "to": "s3"
+      },
+      {
+        "from": "s1",
+        "joint": [
+          "fly",
+          "gust"
+        ],
+        "to": "s2"
+      },
+      {
+        "from": "s1",
+        "joint": [
+          "fly",
+          "idle"
+        ],
+        "to": "s3"
+      },
+      {
+        "from": "s1",
+        "joint": [
+          "drop",
+          "calm"
+        ],
+        "to": "s1"
+      },
+      {
+        "from": "s1",
+        "joint": [
+          "drop",
+          "gust"
+        ],
+        "to": "s1"
+      },
+      {
+        "from": "s1",
+        "joint": [
+          "drop",
+          "idle"
+        ],
+        "to": "s1"
+      },
+      {
+        "from": "s1",
+        "joint": [
+          "idle",
+          "calm"
+        ],
+        "to": "s1"
+      },
+      {
+        "from": "s1",
+        "joint": [
+          "idle",
+          "gust"
+        ],
+        "to": "s1"
+      },
+      {
+        "from": "s1",
+        "joint": [
+          "idle",
+          "idle"
+        ],
+        "to": "s1"
+      },
+      {
+        "from": "s2",
+        "joint": [
+          "pick_up",
+          "calm"
+        ],
+        "to": "s2"
+      },
+      {
+        "from": "s2",
+        "joint": [
+          "pick_up",
+          "gust"
+        ],
+        "to": "s2"
+      },
+      {
+        "from": "s2",
+        "joint": [
+          "pick_up",
+          "idle"
+        ],
+        "to": "s2"
+      },
+      {
+        "from": "s2",
+        "joint": [
+          "fly",
+          "calm"
+        ],
+        "to": "s3"
+      },
+      {
+        "from": "s2",
+        "joint": [
+          "fly",
+          "gust"
+        ],
+        "to": "s2"
+      },
+      {
+        "from": "s2",
+        "joint": [
+          "fly",
+          "idle"
+        ],
+        "to": "s3"
+      },
+      {
+        "from": "s2",
+        "joint": [
+          "drop",
+          "calm"
+        ],
+        "to": "s2"
+      },
+      {
+        "from": "s2",
+        "joint": [
+          "drop",
+          "gust"
+        ],
+        "to": "s2"
+      },
+      {
+        "from": "s2",
+        "joint": [
+          "drop",
+          "idle"
+        ],
+        "to": "s2"
+      },
+      {
+        "from": "s2",
+        "joint": [
+          "idle",
+          "calm"
+        ],
+        "to": "s2"
+      },
+      {
+        "from": "s2",
+        "joint": [
+          "idle",
+          "gust"
+        ],
+        "to": "s2"
+      },
+      {
+        "from": "s2",
+        "joint": [
+          "idle",
+          "idle"
+        ],
+        "to": "s2"
+      },
+      {
+        "from": "s3",
+        "joint": [
+          "pick_up",
+          "calm"
+        ],
+        "to": "s3"
+      },
+      {
+        "from": "s3",
+        "joint": [
+          "pick_up",
+          "gust"
+        ],
+        "to": "s3"
+      },
+      {
+        "from": "s3",
+        "joint": [
+          "pick_up",
+          "idle"
+        ],
+        "to": "s3"
+      },
+      {
+        "from": "s3",
+        "joint": [
+          "fly",
+          "calm"
+        ],
+        "to": "s2"
+      },
+      {
+        "from": "s3",
+        "joint": [
+          "fly",
+          "gust"
+        ],
+        "to": "s2"
+      },
+      {
+        "from": "s3",
+        "joint": [
+          "fly",
+          "idle"
+        ],
+        "to": "s2"
+      },
+      {
+        "from": "s3",
+        "joint": [
+          "drop",
+          "calm"
+        ],
+        "to": "s4"
+      },
+      {
+        "from": "s3",
+        "joint": [
+          "drop",
+          "gust"
+        ],
+        "to": "s4"
+      },
+      {
+        "from": "s3",
+        "joint": [
+          "drop",
+          "idle"
+        ],
+        "to": "s4"
+      },
+      {
+        "from": "s3",
+        "joint": [
+          "idle",
+          "calm"
+        ],
+        "to": "s3"
+      },
+      {
+        "from": "s3",
+        "joint": [
+          "idle",
+          "gust"
+        ],
+        "to": "s3"
+      },
+      {
+        "from": "s3",
+        "joint": [
+          "idle",
+          "idle"
+        ],
+        "to": "s3"
+      },
+      {
+        "from": "s4",
+        "joint": [
+          "pick_up",
+          "calm"
+        ],
+        "to": "s4"
+      },
+      {
+        "from": "s4",
+        "joint": [
+          "pick_up",
+          "gust"
+        ],
+        "to": "s4"
+      },
+      {
+        "from": "s4",
+        "joint": [
+          "pick_up",
+          "idle"
+        ],
+        "to": "s4"
+      },
+      {
+        "from": "s4",
+        "joint": [
+          "fly",
+          "calm"
+        ],
+        "to": "s4"
+      },
+      {
+        "from": "s4",
+        "joint": [
+          "fly",
+          "gust"
+        ],
+        "to": "s4"
+      },
+      {
+        "from": "s4",
+        "joint": [
+          "fly",
+          "idle"
+        ],
+        "to": "s4"
+      },
+      {
+        "from": "s4",
+        "joint": [
+          "drop",
+          "calm"
+        ],
+        "to": "s4"
+      },
+      {
+        "from": "s4",
+        "joint": [
+          "drop",
+          "gust"
+        ],
+        "to": "s4"
+      },
+      {
+        "from": "s4",
+        "joint": [
+          "drop",
+          "idle"
+        ],
+        "to": "s4"
+      },
+      {
+        "from": "s4",
+        "joint": [
+          "idle",
+          "calm"
+        ],
+        "to": "s4"
+      },
+      {
+        "from": "s4",
+        "joint": [
+          "idle",
+          "gust"
+        ],
+        "to": "s4"
+      },
+      {
+        "from": "s4",
+        "joint": [
+          "idle",
+          "idle"
+        ],
+        "to": "s4"
+      }
+    ],
+    "initial_state": "s0",
+    "labeling": {
+      "s0": [
+        "at_base"
+      ],
+      "s1": [
+        "at_base",
+        "has_package"
+      ],
+      "s2": [
+        "en_route",
+        "has_package"
+      ],
+      "s3": [
+        "at_dropzone",
+        "has_package"
+      ],
+      "s4": [
+        "delivered"
+      ]
+    },
+    "coalition": [
+      "uav_controller"
+    ],
+    "formula_natatl": "<{uav_controller}, 6> F delivered"
+  },
+  "output": {
+    "strategy_natural": {
+      "uav_controller": [
+        {
+          "cond": "at_base ∧ ¬has_package",
+          "action": "pick_up"
+        },
+        {
+          "cond": "at_dropzone",
+          "action": "drop"
+        },
+        {
+          "cond": "has_package",
+          "action": "fly"
+        },
+        {
+          "cond": "T",
+          "action": "idle"
+        }
+      ]
+    },
+    "k_individual": {
+      "uav_controller": 6
+    },
+    "k_used": 6,
+    "k_budget": 6,
+    "complexity_evidence": {
+      "uav_controller": [
+        {
+          "cond": "at_base ∧ ¬has_package",
+          "tokens": [
+            "at_base",
+            "∧",
+            "¬",
+            "has_package"
+          ],
+          "cost": 4
+        },
+        {
+          "cond": "at_dropzone",
+          "tokens": [
+            "at_dropzone"
+          ],
+          "cost": 1
+        },
+        {
+          "cond": "has_package",
+          "tokens": [
+            "has_package"
+          ],
+          "cost": 1
+        },
+        {
+          "cond": "T",
+          "tokens": [
+            "T"
+          ],
+          "cost": 0
+        }
+      ]
+    }
+  },
+  "metadata": {
+    "verified": false,
+    "verifier": "NatATL",
+    "satisfaction_from": "s0",
+    "k_checked": null,
+    "satisfied_for_k": null
+  }
+}

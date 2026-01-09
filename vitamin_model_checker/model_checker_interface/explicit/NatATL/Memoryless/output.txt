@@ -1,0 +1,4 @@
+Satisfiable: True
+Attempt: 1
+Winning Strategy per agent:
+[{'condition_action_pairs': [('s', 'A'), ('e', 'A'), ('T', 'I')]}]

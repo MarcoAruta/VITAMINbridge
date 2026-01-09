@@ -1,0 +1,35 @@
+{
+    "strategy_natural": {
+      "convoy_leader": [
+        {
+          "cond": "start_position",
+          "action": "advance"
+        },
+        {
+          "cond": "en_route",
+          "action": "advance"
+        },
+        {
+          "cond": "T",
+          "action": "idle"
+        }
+      ]
+    },
+    "k_individual": {
+      "convoy_leader": 2
+    },
+    "k_used": 2,
+    "k_budget": 2,
+    "complexity_evidence": {
+      "convoy_leader": [
+        {
+          "cond": "start_position",
+          "tokens": 1
+        },
+        {
+          "cond": "en_route",
+          "tokens": 1
+        }
+      ]
+    }
+}

@@ -1,0 +1,22 @@
+{
+  "strategy_natural": {
+    "uav_controller": [
+      {
+        "cond": "at_base ∧ ¬has_package",
+        "action": "pick_up"
+      },
+      {
+        "cond": "at_dropzone",
+        "action": "drop"
+      },
+      {
+        "cond": "has_package",
+        "action": "fly"
+      },
+      {
+        "cond": "T",
+        "action": "idle"
+      }
+    ]
+  }
+}

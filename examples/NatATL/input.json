@@ -1,0 +1,50 @@
+{
+    "input": {
+      "states": ["s0", "s1", "s2"],
+      "agents": ["robot_arm", "conveyor"],
+      "actions": {
+        "robot_arm": ["idle", "pick"],
+        "conveyor": ["stop", "move"]
+      },
+      "transitions": [
+        { "from": "s0", "joint": ["idle", "stop"], "to": "s0" },
+        { "from": "s0", "joint": ["pick", "stop"], "to": "s1" },
+        { "from": "s1", "joint": ["idle", "move"], "to": "s2" },
+        { "from": "s2", "joint": ["idle", "stop"], "to": "s2" }
+      ],
+      "initial_state": "s0",
+      "labeling": {
+        "s0": ["object_on_belt"],
+        "s1": ["object_picked"],
+        "s2": ["object_delivered"]
+      },
+      "formula_natatl": "<{robot_arm}, 2> F object_delivered"
+    },
+    "output": {
+      "strategy_natural": {
+        "robot_arm": [
+          { "cond": "object_on_belt", "action": "pick" },
+          { "cond": "object_picked", "action": "idle" },
+          { "cond": "T", "action": "idle" }
+        ]
+      },
+      "k_individual": { "robot_arm": 2 },
+      "k_used": 2,
+      "k_budget": 2,
+      "complexity_evidence": {
+        "robot_arm": [
+          { "cond": "object_on_belt", "tokens": ["object_on_belt"], "cost": 1 },
+          { "cond": "object_picked", "tokens": ["object_picked"], "cost": 1 },
+          { "cond": "T", "tokens": ["T"], "cost": 0 }
+        ]
+      },
+      "notes": "The robot arm picks the object when it is on the belt, then idles once picked, achieving delivery."
+    },
+    "metadata": {
+      "verified": false,
+      "verifier": "NatATL",
+      "satisfaction_from": "s0",
+      "k_checked": null,
+      "satisfied_for_k": null
+    }
+  }

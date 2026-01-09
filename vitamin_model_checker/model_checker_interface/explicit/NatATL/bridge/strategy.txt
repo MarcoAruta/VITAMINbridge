@@ -1,0 +1,1 @@
+[{'condition_action_pairs': [('s', 'A'), ('e', 'A'), ('T', 'I')]}]

@@ -1,0 +1,31 @@
+Transition
+II DR DR DL DL DL
+RU II RU DL RU DL
+RL RL II DL DL DL
+RL DL RL II RU RU
+DL RL RL RU II RU
+DL RL RL RL RL II
+Unkown_Transition_by
+0 0 0 0 0 0 0 0
+0 0 t1 0 0 0 0 0
+0 0 0 c 0 0 0 0
+0 0 0 0 0 0 0 0
+0 0 0 0 0 t1 0 0
+0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0
+Name_State
+s0_0.0 s1_0.2 s2_0.4 s3_0.6 s4_0.8 s5_1.0
+Initial_State
+s2_0.4
+Atomic_propositions
+a b c d e f g h
+Labelling
+1 0 0 0 0 0 0 1
+0 0 0 0 1 0 0 1
+0 0 1 0 0 0 0 1
+1 0 0 0 0 0 0 1
+1 0 0 0 0 0 0 1
+1 0 0 0 0 0 0 1
+Number_of_agents
+2

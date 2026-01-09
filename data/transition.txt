@@ -1,0 +1,16 @@
+Transition
+PP PR RP
+RP PP PR
+PR RP PP
+Name_State
+pos0 pos1 pos2
+Initial_State
+pos0
+Atomic_propositions
+a b c
+Labelling
+1 0 0
+0 1 0
+0 0 1
+Number_of_agents
+2
