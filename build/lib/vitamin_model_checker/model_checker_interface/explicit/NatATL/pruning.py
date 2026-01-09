@@ -1,88 +1,125 @@
 from vitamin_model_checker.model_checker_interface.explicit.CTL import model_checking
 from vitamin_model_checker.models.CGS import *
+import re
+import ast
 
-#path destination for new updated input file
-pruned_model_file = './tmp.txt'
+pruned_model_file = "./tmp.txt"
+
 
 def modify_matrix(graph, label_matrix, states, action, agent_index, agents):
-    #print(f"states:{states}")
     new_graph = [row.copy() for row in graph]
-    rows_modified = [False] * len(new_graph)
+
     for i, row in enumerate(new_graph):
-        row_modified = False
         for j, elem in enumerate(row):
             if label_matrix[i][j] in states:
-                if isinstance(elem, str) and elem != '*':
-                    elem_parts = elem.split(',')
+                if isinstance(elem, str) and elem != "*":
+                    elem_parts = elem.split(",")
                     new_elem_parts = []
+
+                    idx = agents[agent_index - 1] - 1  # posizione agente nella joint-action
+
                     for part in elem_parts:
                         part_list = list(part)
-                        agent_matches = False
-                        if part_list[agents[agent_index-1]-1] == 'I' or part_list[agents[agent_index-1]-1] == action:
-                            agent_matches = True
-                        if agent_matches:
+
+                        # Semantica "permissiva": tengo sia l'azione scelta sia Idle
+                        if part_list[idx] == "I" or part_list[idx] == action:
                             new_elem_parts.append(part)
-                    new_elem = ','.join(new_elem_parts)
-                    new_graph[i][j] = new_elem if new_elem else 0
-                    row_modified = True
-        rows_modified[i] = row_modified
+
+                    new_graph[i][j] = ",".join(new_elem_parts) if new_elem_parts else 0
+
     return new_graph
 
-def process_transition_matrix_data(cgs, model, agents,  *strategies):
+
+def normalize_ctl_condition(cond: str) -> str:
+    if cond is None:
+        return ""
+    s = str(cond)
+
+    s = s.replace("∧", "&").replace("∨", "|").replace("¬", "!").replace("→", ">")
+    s = re.sub(r"\bnot\b", "!", s, flags=re.IGNORECASE)
+    s = re.sub(r"\s+", " ", s).strip()
+    return s
+
+
+def process_transition_matrix_data(cgs, model, agents, *strategies):
     graph = cgs.get_graph()
     label_matrix = cgs.create_label_matrix(graph)
-    print(f"initial transition matrix: {graph}")
-    #print(f"associated labelling matrix:{label_matrix}")
-    actions_per_agent = cgs.get_actions(agents)
-    agent_actions = {}
-    for i, agent_key in enumerate(actions_per_agent.keys()):
-        agent_actions[f"actions_{agent_key}"] = actions_per_agent[agent_key]
+    all_states = set(cgs.get_states())
 
-    for agent_key in agent_actions:
-        print(agent_key)
-        print(agent_actions[agent_key])
+    print(f"initial transition matrix: {graph}")
+
+    actions_per_agent = cgs.get_actions(agents)
+    for agent_key, acts in actions_per_agent.items():
+        print(f"actions_{agent_key}")
+        print(acts)
 
     for strategy_index, strategy in enumerate(strategies, start=1):
-        state_sets = set()
-        temp = set()
-        for iteration, (condition, action) in enumerate(strategy['condition_action_pairs']):
-            #print(f"condition {condition}")
-            states = model_checking(condition, model)
-            #print(f" result: m_checking{states}, statesres {states['res']}")
-            state_set = eval(states['res'].split(': ')[1])
+        covered = set()
 
-            if iteration > 0:
-                if (state_set):
-                    temp = state_sets
-                    state_sets = state_set - temp
-                else:
-                    state_sets = set(cgs.get_states())
-                    action = "I"
-                #print(f"state_set: {state_sets} con iteration {iteration} action {action}")
-                graph = modify_matrix(graph, label_matrix, state_sets, action, strategy_index, agents)
-                #print(f"second iteration modify_matrix for agent {strategy_index}")
-                print(f'new transition matrix: {graph} modified by agent {strategy_index}')
-            else:
-                if (state_set):
-                    state_sets = state_set
-                else:
-                    state_sets = set(cgs.get_states())
-                    action = "I"
-                #print(f"state_set: {state_sets}, iteration {iteration} action {action}")
-                graph = modify_matrix(graph, label_matrix, state_sets, action, strategy_index, agents)
-                #print(f"First iteration of modify_matrix for agent {strategy_index}")
-                print(f'new transition matrix: {graph} modified by agent {strategy_index}')
+        for (condition, action) in strategy["condition_action_pairs"]:
+            condition = str(condition).strip()
+
+            # --- caso T: default sugli stati rimanenti ---
+            if condition.upper() == "T":
+                target_states = all_states - covered
+                if not target_states:
+                    continue
+                covered |= target_states
+                graph = modify_matrix(graph, label_matrix, target_states, action, strategy_index, agents)
+                print(f"[T] new transition matrix: {graph} modified by agent {strategy_index}")
+                continue
+
+            # --- CTL normale ---
+            condition_norm = normalize_ctl_condition(condition)
+            states = model_checking(cgs, condition_norm, model)
+
+            if not isinstance(states, dict) or "res" not in states:
+                print(f"[WARN] CTL returned unexpected (no dict/res) for '{condition_norm}': {states}")
+                continue
+
+            res_str = states.get("res", "")
+            if ": " not in res_str:
+                print(f"[WARN] CTL res has no ': ' for '{condition_norm}': {states}")
+                continue
+
+            try:
+                state_set = ast.literal_eval(res_str.split(": ", 1)[1])
+            except Exception as e:
+                print(f"[WARN] cannot parse CTL result for '{condition_norm}': {res_str} ({e})")
+                continue
+
+            if not state_set:
+                continue
+
+            target_states = set(state_set) - covered
+            if not target_states:
+                continue
+
+            covered |= target_states
+            graph = modify_matrix(graph, label_matrix, target_states, action, strategy_index, agents)
+            print(f"new transition matrix: {graph} modified by agent {strategy_index}")
 
     return graph
+
 
 def pruning(cgs, model, agents, formula, current_agents):
     cgs1 = CGS()
     cgs1.read_file(model)
-    cgs1.graph = process_transition_matrix_data(cgs, model, agents,  *current_agents)
+
+    cgs1.graph = process_transition_matrix_data(cgs, model, agents, *current_agents)
     cgs1.matrixParser(cgs.get_number_of_agents())
     cgs1.write_updated_file(model, cgs1.graph, pruned_model_file)
-    result = model_checking(formula, pruned_model_file)
 
-    if (result['initial_state'] == 'Initial state s0: True'):
-        #print(result)
+    # robust su firme diverse
+    try:
+        result = model_checking(cgs1, formula, pruned_model_file)
+    except TypeError:
+        result = model_checking(formula, pruned_model_file)
+
+    print(result.get("initial_state", result))
+
+    if result.get("initial_state") == "Initial state s0: True":
+        print("I AM HERE")
         return True
+
+    return False

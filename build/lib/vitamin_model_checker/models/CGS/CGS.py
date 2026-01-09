@@ -225,9 +225,8 @@ class CGS():
 
     # returns the state, given an index
     def get_state_name_by_index(self, index):
-        states = self.get_states()
-        return states[index]
-
+        # self.get_states() è già Python-str
+        return self.get_states()[index]
 
     # converts action_string into a list
     def build_list(self, action_string):

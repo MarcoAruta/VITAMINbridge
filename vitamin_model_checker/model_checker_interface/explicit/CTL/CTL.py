@@ -174,17 +174,26 @@ def solve_tree(cgs, node):
                 T = new_T
             node.value = str(T)
 
+
         elif verifyCTL('FORALL', node.value) and verifyCTL('EVENTUALLY', node.value):  # AF φ
-            # AF φ = ¬EG(¬φ). Calcoliamo EF sul complemento e poi ne prendiamo il complemento
-            target = set(cgs.get_states()) - string_to_set(node.left.value)
-            T = target.copy()
+
+            not_phi = set(cgs.get_states()) - string_to_set(node.left.value)
+
+            # EG(not_phi): greatest fixpoint T = not_phi ∩ EX(T)
+
+            T = set(cgs.get_states())
+
             while True:
-                new_T = T.union(pre_image_exist(cgs.get_edges(), T))
+
+                new_T = not_phi.intersection(pre_image_exist(cgs.get_edges(), T))
+
                 if new_T == T:
                     break
+
                 T = new_T
-            # Complemento rispetto a tutto l'insieme degli stati
+
             node.value = str(set(cgs.get_states()) - T)
+
 
         elif verifyCTL('EXIST', node.value) and verifyCTL('GLOBALLY', node.value):  # EG φ
             # EG φ = greatest fixpoint: T = φ ∩ EX T

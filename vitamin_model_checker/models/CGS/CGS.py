@@ -131,7 +131,8 @@ class CGS():
         return self.graph
 
     def get_states(self):
-        return self.states
+        # garantisce Python-str, non numpy.str_
+        return [str(s) for s in self.states]
 
     def get_matrix_proposition(self):
         return self.matrix_prop
@@ -140,7 +141,7 @@ class CGS():
         return len(self.states)
 
     def get_atomic_prop(self):
-        return self.atomic_propositions
+        return [str(ap) for ap in self.atomic_propositions]
 
     def get_initial_state(self):
         return self.initial_state
@@ -221,19 +222,20 @@ class CGS():
 
         # returns the index of the given atom, in the array of atomic propositions
     def get_atom_index(self, element):
-        array = self.get_atomic_prop()
+        aps = self.get_atomic_prop()
         try:
-            index = np.where(array == element)[0][0]
-            return index
-        except IndexError:
+            return aps.index(str(element))
+        except ValueError:
             print("Element not found in array.")
             return None
 
     # returns the index, given a state name
     def get_index_by_state_name(self, state):
-        state_list = self.get_states()
-        index = np.where(state_list == state)[0][0]
-        return index
+        state_list = self.get_states()  # lista di str
+        try:
+            return state_list.index(str(state))
+        except ValueError:
+            raise ValueError(f"State '{state}' not found in states: {state_list}")
 
     # returns the state, given an index
     def get_state_name_by_index(self, index):
@@ -402,27 +404,22 @@ class CGS():
     # n = 3
     # parser(matrix, n)
     def matrixParser(self, n):
-        for row in self.graph:
+        for r, row in enumerate(self.graph):
             if all(elem == 0 for elem in row):
-                raise ValueError("All row elements are 0")
+                raise ValueError(f"All row elements are 0 (row {r})")
 
-            char_I_count = [0] * n
-
-            for elem in row:
-                if elem == 0:
+            for c, elem in enumerate(row):
+                if elem == 0 or elem == '*':
                     continue
 
                 strings = str(elem).split(',')
                 for s in strings:
-                    # if len(s) != n:
-                    #    raise ValueError(f"string length {s} for element {elem} is not equal to {n}")
-
-                    for i in range(n):
-                        if s[i] == 'I':
-                            char_I_count[i] += 1
-
-            if any(count == 0 for count in char_I_count):
-                raise ValueError("Idle error: There has to be at least one 'I' for each row")
+                    s = s.strip()
+                    # controllo di robustezza: ogni joint-action deve avere lunghezza >= n
+                    if len(s) < n:
+                        raise ValueError(
+                            f"Malformed joint-action '{s}' at ({r},{c}): length {len(s)} < n={n}"
+                        )
     def get_action_cost(self, action_letter, agent_index):
         """
         Restituisce il costo dell'azione singola `action_letter` per l'agente `agent_index` (1-based).
